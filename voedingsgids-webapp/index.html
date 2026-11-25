@@ -1,0 +1,2005 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Interactieve gids met vitamines, mineralen, macronutriënten en doelen.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Voedingsgids">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<title>Voedingsstoffengids</title>
+<style>
+  :root {
+    --bg: #f5f5f7; --panel: #ffffff; --ink: #1d1d1f; --muted: #6e6e73; --line: #e3e3e8;
+    --accent: #0a84ff; --accent-soft: #e6f1ff; --warn: #b45309; --warn-soft: #fff4e0;
+    --good: #1f7a45; --good-soft: #e5f6ec; --shadow: 0 1px 2px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1e; --panel: #2c2c2e; --ink: #f5f5f7; --muted: #a1a1a6; --line: #3a3a3c;
+      --accent: #409cff; --accent-soft: #14304f; --warn: #ffb454; --warn-soft: #3a2b12;
+      --good: #5bd48a; --good-soft: #15321f; --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 0.9375rem/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+    padding: 16px 24px; background: var(--panel); border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; z-index: 5;
+  }
+  h1 { font-size: 1.25rem; margin: 0; letter-spacing: -.01em; }
+  .seg { display: inline-flex; background: var(--bg); border-radius: 9px; padding: 3px; }
+  .seg button {
+    border: 0; background: transparent; color: var(--ink); font: inherit; font-weight: 500;
+    padding: 6px 16px; border-radius: 7px; cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] { background: var(--panel); box-shadow: 0 1px 3px rgba(0,0,0,.18); }
+  .search {
+    flex: 1; min-width: 180px; max-width: 360px; margin-left: auto;
+    border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+    border-radius: 9px; padding: 8px 12px; font: inherit;
+  }
+  .search:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  main { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 20px; padding: 20px 16px 90px; max-width: 1200px; margin: 0 auto; }
+  @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+  .list { display: grid; gap: 8px; align-content: start; }
+  .group-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 10px 4px 0; }
+  .item {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    background: var(--panel); color: var(--ink); border: 1px solid transparent; border-radius: 12px;
+    padding: 10px 12px; cursor: pointer; font: inherit; box-shadow: var(--shadow);
+  }
+  .item:hover { border-color: var(--line); }
+  .item[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .badge {
+    flex: none; width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center;
+    font-weight: 700; font-size: 15px; color: #fff;
+  }
+  .item small { display: block; color: var(--muted); font-size: 0.7812rem; line-height: 1.3; }
+  .item b { font-weight: 600; }
+  .goal-count { margin-left: auto; font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+  .panel {
+    background: var(--panel); border-radius: 16px; padding: 24px 28px; box-shadow: var(--shadow); min-height: 320px;
+  }
+  .panel h2 { margin: 0 0 2px; font-size: 1.5rem; letter-spacing: -.01em; }
+  .sub { color: var(--muted); margin: 0 0 18px; }
+  h3 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 22px 0 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    border: 0; background: var(--accent-soft); color: var(--accent); font: inherit; font-size: 0.8438rem;
+    padding: 5px 12px; border-radius: 999px; cursor: pointer;
+  }
+  ul { margin: 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  .box { border-radius: 12px; padding: 12px 16px; margin-top: 8px; }
+  .box.warn { background: var(--warn-soft); color: var(--warn); }
+  .box.info { background: var(--good-soft); color: var(--good); }
+  .box strong { color: inherit; }
+  .why { margin: 4px 0 0; color: var(--ink); }
+  .vcard { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-top: 12px; display: flex; gap: 14px; }
+  .vcard h4 { margin: 0; font-size: 1rem; }
+  .vcard button.open { margin-top: 8px; border: 0; background: none; color: var(--accent); font: inherit; padding: 0; cursor: pointer; }
+  .item[data-depth="1"] .badge { width: 34px; height: 34px; font-size: 13px; margin: 0 3px; }
+  .item[data-depth="2"] .badge { width: 30px; height: 30px; font-size: 12px; margin: 0 5px; }
+  .item[data-depth="3"] .badge { width: 26px; height: 26px; font-size: 11px; margin: 0 7px; }
+  .item[data-depth="1"] b, .item[data-depth="2"] b, .item[data-depth="3"] b { font-weight: 500; }
+  .item[data-depth="2"] small, .item[data-depth="3"] small { display: none; }
+  .group-title { margin-left: 0; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 7px; vertical-align: -1px; }
+  .chev { margin-left: auto; flex: none; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; color: var(--muted); font-size: .8rem; }
+  .chev:hover { background: var(--line); color: var(--ink); }
+  .item small.foodtag { color: var(--good); font-weight: 600; }
+  .group-title.lvl0 { font-size: 0.8125rem; color: var(--ink); margin-top: 18px; letter-spacing: .04em; }
+  .group-title.lvl1 { margin-top: 8px; }
+  .crumb { font-size: 0.7812rem; color: var(--muted); margin-bottom: 4px; }
+  .sect { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 22px 0 0; }
+  .empty { color: var(--muted); padding: 40px 0; text-align: center; }
+  footer { max-width: 1200px; margin: 0 auto; padding: 0 24px 40px; color: var(--muted); font-size: 0.7812rem; }
+
+  html { font-size: 16px; }
+  .tools { display: inline-flex; gap: 6px; align-items: center; }
+  .tbtn {
+    border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; font-weight: 600;
+    min-width: 36px; height: 34px; padding: 0 10px; border-radius: 9px; cursor: pointer; white-space: nowrap;
+  }
+  .tbtn:hover { border-color: var(--accent); }
+  .tbtn:disabled { opacity: .4; cursor: default; border-color: var(--line); }
+  .totop.fixed {
+    position: fixed; bottom: 18px; z-index: 20;
+    right: max(16px, calc((100vw - 1200px) / 2 + 16px));
+    background: var(--panel); color: var(--accent); border: 1px solid var(--line);
+    box-shadow: 0 2px 10px rgba(0,0,0,.18); transition: opacity .2s;
+  }
+  .totop.fixed.atTop { color: var(--muted); }
+  .totop.fixed:hover { color: var(--accent); }
+  .totop-wrap { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); text-align: center; }
+  .totop {
+    border: 0; background: var(--accent-soft); color: var(--accent); font: inherit; font-weight: 600;
+    padding: 9px 22px; border-radius: 999px; cursor: pointer;
+  }
+  .totop:hover { filter: brightness(.96); }
+  .print-only { display: none; }
+  /* iPhone & iPad: veilige randen, geen inzoomen bij zoeken, grotere raakvlakken */
+  html { -webkit-text-size-adjust: 100%; }
+  header { padding-left: max(24px, env(safe-area-inset-left)); padding-right: max(24px, env(safe-area-inset-right)); }
+  main { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+  footer { padding-left: max(24px, env(safe-area-inset-left)); padding-right: max(24px, env(safe-area-inset-right)); }
+  .search { font-size: max(16px, 1rem); }
+  .totop.fixed { bottom: calc(18px + env(safe-area-inset-bottom)); }
+  .item, .chev, .chip, .tbtn, .seg button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  @media (max-width: 1000px) {
+    .search { flex: 1 1 240px; max-width: none; margin-left: 0; }
+  }
+  @media (max-width: 760px) {
+    header { position: static; padding-top: 12px; padding-bottom: 12px; gap: 10px; padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+    h1 { font-size: 1.1rem; width: 100%; }
+    .seg { flex: 1 1 100%; }
+    .seg button { flex: 1; padding: 9px 8px; }
+    .search { flex: 1 1 100%; max-width: none; margin-left: 0; }
+    .tools { flex: 1 1 100%; justify-content: flex-end; }
+    .tbtn { height: 40px; min-width: 44px; }
+    .panel { padding: 18px 16px; border-radius: 14px; }
+    .item { padding: 12px; }
+    .chip { padding: 8px 14px; }
+    footer { padding-bottom: 90px; }
+  }
+  @media print {
+    @page { margin: 16mm; }
+    body { background: #fff; color: #000; }
+    header .seg, header .search, header .tools, .list, footer, .totop, .totop-wrap, .chip, .hint { display: none !important; }
+    header { position: static; border: 0; padding: 0 0 10px; background: #fff; }
+    main { display: block; padding: 0; max-width: none; }
+    .panel { box-shadow: none; padding: 0; border-radius: 0; background: #fff; }
+    .box.warn, .box.info, .vcard { break-inside: avoid; }
+    .box.warn { background: #fff4e0; color: #7a3a00; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .box.info { background: #e5f6ec; color: #145a32; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .print-only { display: block; color: #555; font-size: .75rem; margin-top: 18px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Voedingsstoffengids</h1>
+  <div class="seg" role="group" aria-label="Weergave">
+    <button id="tabA" aria-pressed="true">Macronutriënten</button>
+    <button id="tabB" aria-pressed="false">Micronutriënten</button>
+    <button id="tabG" aria-pressed="false">Doelen</button>
+  </div>
+  <input id="q" class="search" type="search" placeholder="Zoeken…" aria-label="Zoeken">
+  <div class="tools" role="group" aria-label="Weergave-opties">
+    <button class="tbtn" id="fsDown" title="Kleinere letters" aria-label="Kleinere letters" style="font-size:.8rem">A&minus;</button>
+    <button class="tbtn" id="fsUp" title="Grotere letters" aria-label="Grotere letters" style="font-size:1.1rem">A+</button>
+    <button class="tbtn" id="printBtn" title="Afdrukken of opslaan als PDF" aria-label="Afdrukken of opslaan als PDF">Print / PDF</button>
+  </div>
+</header>
+
+<main>
+  <nav id="list" class="list" aria-label="Lijst"></nav>
+  <section id="detail" class="panel" aria-live="polite"></section>
+</main>
+
+<button id="toTop" class="totop fixed" aria-label="Terug naar het begin van de pagina">↑ Naar begin</button>
+
+<footer>
+  Algemene voorlichting, geen medisch advies. Referentiewaarden zijn de Europese etikettenwaarden (NRV); voor macronutriënten gelden de richtwaarden van EFSA en de Gezondheidsraad.
+  De doelen zijn gebaseerd op de in de EU toegestane gezondheidsclaims: een bijdrage aan een normale werking, geen belofte van verbetering.
+  Twijfel je over een supplement of gebruik je medicijnen? Overleg met je huisarts of apotheker.
+</footer>
+
+<script>
+/* ---------- Doelen ---------- */
+const GOALS = {
+  hersenen:  "Hersenen & geheugen",
+  hart:      "Hart, bloedvaten & cholesterol",
+  zenuw:     "Zenuwstelsel",
+  energie:   "Energie & minder vermoeidheid",
+  botten:    "Botten & tanden",
+  spieren:   "Spieren & hart",
+  immuun:    "Immuunsysteem",
+  huid:      "Huid & slijmvliezen",
+  haar:      "Haar & nagels",
+  ogen:      "Ogen & zicht",
+  bloed:     "Rode bloedcellen & ijzer",
+  stolling:  "Bloedstolling",
+  homocys:   "Homocysteïne-stofwisseling",
+  oxidatie:  "Bescherming tegen oxidatieve stress",
+  celdeling: "Celdeling & zwangerschap",
+  hormonen:  "Hormonen & vruchtbaarheid",
+  schildklier:"Schildklier",
+  stofwissel:"Eiwit- & suikerstofwisseling",
+  vocht:     "Vocht, zouten & bloeddruk",
+  spijsvertering:"Spijsvertering & darmflora"
+};
+
+const GOAL_NOTES = {
+  hersenen: "De claims gaan over een bijdrage aan een normale psychologische en cognitieve functie. Er is geen bewijs dat extra inname het geheugen verbetert bij mensen die geen tekort hebben. Het gaat dus om een bijdrage aan de normale werking, niet om een prestatieverhoging.",
+  vocht: "Natrium en kalium werken samen: de meeste mensen krijgen te veel natrium (zout) en te weinig kalium binnen."
+};
+
+const GROUP = {
+  vet:   "Vetoplosbare vitamines",
+  water: "Wateroplosbare vitamines",
+  macro: "Macromineralen",
+  spoor: "Sporenelementen",
+  mac:   "Macronutriënt",
+  ove:   "Essentiële stof",
+  ultra: "Ultra-sporenelement",
+  nie:   "Niet-essentieel",
+  vlike: "Vitamine-achtige stof",
+  fyto:  "Plantaardige stof",
+  darm:  "Darmgezondheid"
+};
+
+/* ---------- Vitamines ---------- */
+const VITAMINS = [
+  { id:"A", type:"vit", letter:"A", naam:"Vitamine A", alias:"Retinol, bètacaroteen", groep:"vet", kleur:"#e8890c", nrv:"800 µg",
+    functie:"Belangrijk voor het zien (vooral in het donker), de huid, de slijmvliezen en de weerstand.",
+    doelen:{
+      ogen:"Draagt bij aan het behoud van normaal zicht.",
+      huid:"Draagt bij aan het behoud van normale huid en slijmvliezen.",
+      immuun:"Draagt bij aan de normale werking van het immuunsysteem.",
+      bloed:"Draagt bij aan een normale ijzerstofwisseling.",
+      celdeling:"Speelt een rol bij celspecialisatie."
+    },
+    bronnen:["Lever en leverproducten","Wortel, zoete aardappel, spinazie (als bètacaroteen)","Eieren, zuivel, vette vis"],
+    tekort:"Nachtblindheid, droge ogen en huid, vaker infecties.",
+    let_op:"Te veel is schadelijk, vooral uit supplementen of lever. Zwangere vrouwen moeten hoge doses vermijden. Bètacaroteen uit groente is veilig." },
+
+  { id:"B1", type:"vit", letter:"B1", naam:"Vitamine B1", alias:"Thiamine", groep:"water", kleur:"#2f9e8f", nrv:"1,1 mg",
+    functie:"Helpt koolhydraten om te zetten in energie en ondersteunt zenuwen en hart.",
+    doelen:{
+      energie:"Draagt bij aan een normale energieleverende stofwisseling.",
+      zenuw:"Draagt bij aan de normale werking van het zenuwstelsel.",
+      hersenen:"Draagt bij aan normale psychologische functies (o.a. denken en geheugen).",
+      spieren:"Draagt bij aan de normale werking van het hart."
+    },
+    bronnen:["Volkorenproducten","Varkensvlees","Peulvruchten, zonnebloempitten, noten"],
+    tekort:"Vermoeidheid, prikkelbaarheid, zenuwklachten (beriberi bij ernstig tekort).",
+    let_op:"Een tekort komt vooral voor bij overmatig alcoholgebruik of eenzijdige voeding." },
+
+  { id:"B2", type:"vit", letter:"B2", naam:"Vitamine B2", alias:"Riboflavine", groep:"water", kleur:"#d4a017", nrv:"1,4 mg",
+    functie:"Nodig voor energiestofwisseling, huid, ogen en de aanmaak van rode bloedcellen.",
+    doelen:{
+      energie:"Draagt bij aan een normale energieleverende stofwisseling en aan vermindering van vermoeidheid.",
+      huid:"Draagt bij aan het behoud van normale huid en slijmvliezen.",
+      ogen:"Draagt bij aan het behoud van normaal zicht.",
+      bloed:"Draagt bij aan het behoud van normale rode bloedcellen en aan een normale ijzerstofwisseling.",
+      zenuw:"Draagt bij aan de normale werking van het zenuwstelsel.",
+      oxidatie:"Draagt bij aan de bescherming van cellen tegen oxidatieve stress."
+    },
+    bronnen:["Zuivel (melk, yoghurt)","Eieren","Peulvruchten, amandelen, groene bladgroenten"],
+    tekort:"Ontstoken mondhoeken, schilferige huid, gevoelige ogen.",
+    let_op:"Licht breekt riboflavine af: bewaar zuivel donker. Een overschot geeft felgele urine, dat is onschuldig." },
+
+  { id:"B3", type:"vit", letter:"B3", naam:"Vitamine B3", alias:"Niacine", groep:"water", kleur:"#c0562b", nrv:"16 mg",
+    functie:"Betrokken bij energieproductie, zenuwstelsel en huid.",
+    doelen:{
+      energie:"Draagt bij aan een normale energieleverende stofwisseling en aan vermindering van vermoeidheid.",
+      zenuw:"Draagt bij aan de normale werking van het zenuwstelsel.",
+      hersenen:"Draagt bij aan normale psychologische functies (o.a. denken en geheugen).",
+      huid:"Draagt bij aan het behoud van normale huid en slijmvliezen."
+    },
+    bronnen:["Vis (tonijn, zalm)","Gevogelte","Volkoren, pinda’s, paddenstoelen"],
+    tekort:"Pellagra: huidproblemen, diarree, verwardheid (zeldzaam in Nederland en Duitsland).",
+    let_op:"Hoge doses nicotinezuur geven blozen en jeuk en kunnen de lever belasten. Houd je aan de dosering op het etiket." },
+
+  { id:"B5", type:"vit", letter:"B5", naam:"Vitamine B5", alias:"Pantotheenzuur", groep:"water", kleur:"#7b61c9", nrv:"6 mg",
+    functie:"Onderdeel van een sleutelmolecuul in de energiestofwisseling (co-enzym A).",
+    doelen:{
+      energie:"Draagt bij aan een normale energieleverende stofwisseling en aan vermindering van vermoeidheid.",
+      hersenen:"Draagt bij aan een normale mentale prestatie.",
+      hormonen:"Draagt bij aan een normale synthese en stofwisseling van steroïdhormonen en vitamine D."
+    },
+    bronnen:["Vlees, vis, eieren","Volkoren, peulvruchten","Avocado, champignons"],
+    tekort:"Zeer zeldzaam omdat het in bijna alle voedsel zit.",
+    let_op:"Zeer hoge doses kunnen maagklachten geven." },
+
+  { id:"B6", type:"vit", letter:"B6", naam:"Vitamine B6", alias:"Pyridoxine", groep:"water", kleur:"#3a7bd5", nrv:"1,4 mg",
+    functie:"Speelt een rol bij de eiwitstofwisseling, het zenuwstelsel en de aanmaak van rode bloedcellen.",
+    doelen:{
+      energie:"Draagt bij aan een normale energieleverende stofwisseling en aan vermindering van vermoeidheid.",
+      zenuw:"Draagt bij aan de normale werking van het zenuwstelsel.",
+      hersenen:"Draagt bij aan normale psychologische functies (o.a. denken en geheugen).",
+      bloed:"Draagt bij aan de normale aanmaak van rode bloedcellen.",
+      immuun:"Draagt bij aan de normale werking van het immuunsysteem.",
+      hormonen:"Draagt bij aan de regulering van hormonale activiteit.",
+      homocys:"Draagt bij aan een normale homocysteïnestofwisseling.",
+      stofwissel:"Draagt bij aan een normale eiwit- en glycogeenstofwisseling."
+    },
+    bronnen:["Vis, gevogelte, varkensvlees","Banaan, aardappel","Volkoren, noten, peulvruchten"],
+    tekort:"Ontstoken huid en mondhoeken, verwardheid, bloedarmoede.",
+    let_op:"Langdurig hoge doses (boven ongeveer 10 mg per dag uit supplementen) kunnen zenuwschade geven. Let op meerdere supplementen tegelijk." },
+
+  { id:"B7", type:"vit", letter:"B7", naam:"Vitamine B7", alias:"Biotine (vitamine H)", groep:"water", kleur:"#e0627a", nrv:"50 µg",
+    functie:"Helpt bij de stofwisseling van vetten, koolhydraten en eiwitten.",
+    doelen:{
+      energie:"Draagt bij aan een normale energieleverende stofwisseling.",
+      zenuw:"Draagt bij aan de normale werking van het zenuwstelsel.",
+      hersenen:"Draagt bij aan normale psychologische functies (o.a. denken en geheugen).",
+      haar:"Draagt bij aan het behoud van normaal haar.",
+      huid:"Draagt bij aan het behoud van normale huid en slijmvliezen."
+    },
+    bronnen:["Eieren (gekookt)","Lever, noten, zaden","Peulvruchten, volkoren"],
+    tekort:"Zeldzaam; kan leiden tot haaruitval, huiduitslag en vermoeidheid.",
+    let_op:"Het bewijs voor haargroei is er alleen bij een echt tekort. Biotine kan laboratoriumuitslagen vertekenen (o.a. schildklier, troponine): meld gebruik altijd bij bloedonderzoek." },
+
+  { id:"B9", type:"vit", letter:"B9", naam:"Vitamine B9", alias:"Foliumzuur, foliaat", groep:"water", kleur:"#3cae5c", nrv:"200 µg",
+    functie:"Nodig voor celdeling en de aanmaak van DNA en rode bloedcellen.",
+    doelen:{
+      celdeling:"Draagt bij aan de groei van maternaal weefsel tijdens de zwangerschap en aan een normale celdeling. Aanbevolen voor wie zwanger wil worden.",
+      bloed:"Draagt bij aan een normale aanmaak van bloedcellen.",
+      homocys:"Draagt bij aan een normale homocysteïnestofwisseling.",
+      immuun:"Draagt bij aan de normale werking van het immuunsysteem.",
+      energie:"Draagt bij aan vermindering van vermoeidheid.",
+      hersenen:"Draagt bij aan normale psychologische functies (o.a. denken en geheugen)."
+    },
+    bronnen:["Groene bladgroenten (spinazie, boerenkool)","Peulvruchten, broccoli","Sinaasappel, volkoren"],
+    tekort:"Bloedarmoede, vermoeidheid, aften in de mond; bij zwangerschap risico op neuraalbuisdefecten.",
+    let_op:"Foliumzuur kan een B12-tekort maskeren. Laat bij twijfel eerst B12 meten." },
+
+  { id:"B12", type:"vit", letter:"B12", naam:"Vitamine B12", alias:"Cobalamine", groep:"water", kleur:"#c0392b", nrv:"2,5 µg",
+    functie:"Essentieel voor zenuwen, rode bloedcellen en DNA. Zit alleen in dierlijke producten.",
+    doelen:{
+      bloed:"Draagt bij aan de normale aanmaak van rode bloedcellen.",
+      zenuw:"Draagt bij aan de normale werking van het zenuwstelsel.",
+      hersenen:"Draagt bij aan normale psychologische functies (o.a. denken en geheugen).",
+      energie:"Draagt bij aan een normale energieleverende stofwisseling en aan vermindering van vermoeidheid.",
+      homocys:"Draagt bij aan een normale homocysteïnestofwisseling.",
+      immuun:"Draagt bij aan de normale werking van het immuunsysteem.",
+      celdeling:"Draagt bij aan een normale celdeling."
+    },
+    bronnen:["Vis, schaaldieren, vlees, lever","Eieren, zuivel","Verrijkte producten (bijv. plantaardige melk, ontbijtgranen)"],
+    tekort:"Vermoeidheid, tintelingen, geheugenklachten, bloedarmoede.",
+    let_op:"Mensen die weinig of geen dierlijke producten eten, en ouderen (de opname uit voeding neemt af met de leeftijd), lopen meer risico op een tekort. Laat dit zo nodig via bloedonderzoek vaststellen." },
+
+  { id:"C", type:"vit", letter:"C", naam:"Vitamine C", alias:"Ascorbinezuur", groep:"water", kleur:"#f08a24", nrv:"80 mg",
+    functie:"Antioxidant en nodig voor collageen (bindweefsel). Verbetert de opname van plantaardig ijzer.",
+    doelen:{
+      immuun:"Draagt bij aan de normale werking van het immuunsysteem, ook tijdens en na intensieve lichaamsbeweging.",
+      oxidatie:"Draagt bij aan de bescherming van cellen tegen oxidatieve stress.",
+      huid:"Draagt bij aan de normale collageenvorming voor een normale werking van de huid.",
+      botten:"Draagt bij aan de normale collageenvorming voor een normale werking van botten, kraakbeen en tandvlees.",
+      bloed:"Verhoogt de opname van ijzer.",
+      energie:"Draagt bij aan vermindering van vermoeidheid.",
+      zenuw:"Draagt bij aan de normale werking van het zenuwstelsel.",
+      hersenen:"Draagt bij aan normale psychologische functies (o.a. denken en geheugen)."
+    },
+    bronnen:["Paprika, citrusfruit, kiwi","Broccoli, aardbeien, spruitjes","Aardappelen (in kleinere hoeveelheid, maar dagelijks gegeten)"],
+    tekort:"Scheurbuik: bloedend tandvlees, vermoeidheid, trage wondgenezing.",
+    let_op:"Het lichaam plast een overschot uit. Zeer hoge doses geven maag-darmklachten en kunnen bij aanleg nierstenen bevorderen. Het bewijs dat extra C verkoudheid voorkomt is beperkt." },
+
+  { id:"D", type:"vit", letter:"D", naam:"Vitamine D", alias:"Cholecalciferol", groep:"vet", kleur:"#f2b01e", nrv:"5 µg",
+    functie:"Zorgt dat je calcium en fosfor opneemt. Wordt in de huid aangemaakt onder invloed van zonlicht.",
+    doelen:{
+      botten:"Draagt bij aan het behoud van normale botten en tanden en aan een normale opname van calcium.",
+      spieren:"Draagt bij aan het behoud van een normale spierfunctie.",
+      immuun:"Draagt bij aan de normale werking van het immuunsysteem.",
+      celdeling:"Draagt bij aan een normale celdeling."
+    },
+    bronnen:["Zonlicht (zomer)","Vette vis (zalm, haring, makreel)","Eieren, verrijkte margarine en melk"],
+    tekort:"Zwakke botten (osteomalacie, osteoporose), spierzwakte, bij kinderen rachitis.",
+    let_op:"In de winter maakt de huid op onze breedtegraad vrijwel geen vitamine D aan. Het Voedingscentrum adviseert een supplement aan bepaalde groepen (bijvoorbeeld ouderen, mensen met een donkere huid, en wie weinig buiten komt). Te veel geeft een te hoog calciumgehalte; blijf bij de dosering op het etiket of van de arts." },
+
+  { id:"E", type:"vit", letter:"E", naam:"Vitamine E", alias:"Tocoferol", groep:"vet", kleur:"#5a8f29", nrv:"12 mg",
+    functie:"Antioxidant die celmembranen beschermt tegen beschadiging.",
+    doelen:{
+      oxidatie:"Draagt bij aan de bescherming van cellen tegen oxidatieve stress."
+    },
+    bronnen:["Plantaardige oliën (zonnebloem, tarwekiem)","Noten en zaden (amandelen, zonnebloempitten)","Avocado, groene bladgroenten"],
+    tekort:"Zeldzaam; zenuw- en spierklachten, meestal bij opnamestoornissen.",
+    let_op:"Hoge supplementdoses kunnen de bloedstolling remmen, vooral samen met bloedverdunners." },
+
+  { id:"K", type:"vit", letter:"K", naam:"Vitamine K", alias:"K1 (fylloquinon), K2 (menaquinon)", groep:"vet", kleur:"#1f8a70", nrv:"75 µg",
+    functie:"Nodig voor de aanmaak van stollingseiwitten en voor het inbouwen van calcium in botten.",
+    doelen:{
+      stolling:"Draagt bij aan een normale bloedstolling.",
+      botten:"Draagt bij aan het behoud van normale botten."
+    },
+    bronnen:["Groene bladgroenten (spinazie, boerenkool, broccoli)","K2: gefermenteerd voedsel (natto), kaas, eieren","Plantaardige oliën"],
+    tekort:"Verhoogde bloedingsneiging; zeldzaam bij volwassenen, vaker bij pasgeborenen.",
+    let_op:"Gebruik je vitamine K-antagonisten (coumarines zoals acenocoumarol of fenprocoumon)? Wissel dan niet zomaar je groente-inname of supplementen. Overleg met de trombosedienst." }
+];
+
+/* ---------- Mineralen & sporenelementen ---------- */
+const MINERALS = [
+  { id:"m_Ca", type:"min", letter:"Ca", naam:"Calcium", alias:"Kalk", groep:"macro", kleur:"#6c8ebf", nrv:"800 mg",
+    functie:"Het meest voorkomende mineraal in het lichaam: bouwstof voor botten en tanden, en nodig voor spieren, zenuwen en bloedstolling.",
+    doelen:{
+      botten:"Nodig voor het behoud van normale botten en tanden.",
+      spieren:"Draagt bij aan een normale spierfunctie.",
+      zenuw:"Draagt bij aan een normale neurotransmissie (signaaloverdracht tussen zenuwcellen).",
+      stolling:"Draagt bij aan een normale bloedstolling.",
+      energie:"Draagt bij aan een normale energieleverende stofwisseling.",
+      spijsvertering:"Draagt bij aan de normale functie van spijsverteringsenzymen."
+    },
+    bronnen:["Melk, yoghurt, kaas","Met calcium verrijkte plantaardige zuiveralternatieven, tofu met calcium","Boerenkool, broccoli, sardines met graat, amandelen"],
+    tekort:"Op lange termijn broze botten (osteoporose); spierkrampen en tintelingen bij een sterk tekort.",
+    let_op:"Het lichaam heeft vitamine D nodig om calcium op te nemen. Totaal niet meer dan ongeveer 2500 mg per dag; hoge supplementdoses kunnen nierstenen en obstipatie geven en de opname van ijzer en zink remmen." },
+
+  { id:"m_P", type:"min", letter:"P", naam:"Fosfor", alias:"Fosfaat", groep:"macro", kleur:"#8e7cc3", nrv:"700 mg",
+    functie:"Bouwsteen van botten en van energiemoleculen (ATP) en celmembranen.",
+    doelen:{
+      botten:"Draagt bij aan het behoud van normale botten en tanden.",
+      energie:"Draagt bij aan een normale energieleverende stofwisseling.",
+      celdeling:"Draagt bij aan de normale functie van celmembranen."
+    },
+    bronnen:["Zuivel, vlees, vis, eieren","Volkoren, peulvruchten, noten","Toevoegingen in frisdrank en bewerkte producten (fosfaten)"],
+    tekort:"Zeer zeldzaam bij een gewoon eetpatroon.",
+    let_op:"Een overschot komt vaker voor dan een tekort. Bij verminderde nierfunctie moet de inname beperkt worden; overleg met de arts of diëtist." },
+
+  { id:"m_Mg", type:"min", letter:"Mg", naam:"Magnesium", alias:"", groep:"macro", kleur:"#2a9d8f", nrv:"375 mg",
+    functie:"Betrokken bij honderden enzymreacties: energieproductie, spier- en zenuwfunctie, eiwitaanmaak.",
+    doelen:{
+      energie:"Draagt bij aan vermindering van vermoeidheid en een normale energieleverende stofwisseling.",
+      spieren:"Draagt bij aan een normale spierfunctie.",
+      zenuw:"Draagt bij aan de normale werking van het zenuwstelsel.",
+      hersenen:"Draagt bij aan normale psychologische functies (o.a. denken en geheugen).",
+      botten:"Draagt bij aan het behoud van normale botten en tanden.",
+      vocht:"Draagt bij aan een normaal evenwicht van elektrolyten."
+    },
+    bronnen:["Noten en zaden (amandelen, pompoenpitten)","Volkoren, peulvruchten, groene bladgroenten","Pure chocolade, mineraalwater (sommige merken)"],
+    tekort:"Spierkrampen, vermoeidheid, tintelingen, soms hartritmestoornissen (meestal door medicijnen of ziekte).",
+    let_op:"Uit supplementen niet meer dan ongeveer 250 mg per dag; meer geeft vaak diarree. Bij nierfunctiestoornis alleen op advies van de arts." },
+
+  { id:"m_K", type:"min", letter:"K", naam:"Kalium", alias:"Potassium", groep:"macro", kleur:"#e76f51", nrv:"2000 mg",
+    functie:"Elektrolyt dat de vochtbalans in cellen regelt en nodig is voor zenuwprikkels en spiersamentrekking.",
+    doelen:{
+      spieren:"Draagt bij aan een normale spierfunctie.",
+      zenuw:"Draagt bij aan de normale werking van het zenuwstelsel.",
+      vocht:"Draagt bij aan het behoud van een normale bloeddruk."
+    },
+    bronnen:["Banaan, aardappel, tomaat, avocado","Peulvruchten, spinazie, noten","Gedroogd fruit, yoghurt"],
+    tekort:"Spierzwakte, krampen, hartritmestoornissen; vaak door plaspillen, braken of diarree.",
+    let_op:"Te veel kalium is gevaarlijk bij nierziekte of bij gebruik van ACE-remmers en kaliumsparende plaspillen. Neem geen kaliumsupplementen of kaliumhoudende zoutvervangers zonder overleg met de arts." },
+
+  { id:"m_Na", type:"min", letter:"Na", naam:"Natrium", alias:"Zout (natriumchloride)", groep:"macro", kleur:"#9aa5b1", nrv:"Geen NRV; maximaal 6 g zout per dag (≈ 2,4 g natrium)",
+    functie:"Regelt samen met kalium de vochtbalans en is nodig voor zenuw- en spierprikkels.",
+    doelen:{
+      vocht:"Regelt de vochtbalans in het lichaam; een hoge inname verhoogt de bloeddruk.",
+      zenuw:"Nodig voor de geleiding van zenuwprikkels."
+    },
+    bronnen:["Keukenzout, brood, kaas","Vleeswaren, soep, sauzen","Kant-en-klaarmaaltijden en chips"],
+    tekort:"Zeldzaam; kan optreden bij zeer veel zweten gecombineerd met veel water drinken, met hoofdpijn en verwardheid als gevolg.",
+    let_op:"De meeste mensen krijgen te veel binnen, geen te weinig. Veel zout hangt samen met hoge bloeddruk. Het merendeel zit in bewerkte producten, niet in het zoutvaatje." },
+
+  { id:"m_Cl", type:"min", letter:"Cl", naam:"Chloride", alias:"", groep:"macro", kleur:"#4cc9f0", nrv:"800 mg",
+    functie:"Elektrolyt dat samen met natrium de vochtbalans regelt en deel van het maagzuur vormt.",
+    doelen:{
+      spijsvertering:"Draagt bij aan een normale spijsvertering door de vorming van maagzuur.",
+      vocht:"Draagt bij aan het evenwicht van vocht en elektrolyten."
+    },
+    bronnen:["Keukenzout","Brood, kaas, vleeswaren","Tomaat, olijven, zeewier"],
+    tekort:"Zeldzaam; komt meestal samen met natrium- of kaliumtekort voor (braken, diarree).",
+    let_op:"Inname gaat vrijwel altijd samen met natrium (zout). Voor dezelfde reden is een tekort in de praktijk bijna uitgesloten." },
+
+  { id:"m_Fe", type:"min", letter:"Fe", naam:"IJzer", alias:"Ferrum", groep:"spoor", kleur:"#b5483a", nrv:"14 mg",
+    functie:"Bestanddeel van hemoglobine: vervoert zuurstof in het bloed en naar de spieren.",
+    doelen:{
+      bloed:"Draagt bij aan de normale vorming van rode bloedcellen en hemoglobine en aan een normaal zuurstoftransport.",
+      energie:"Draagt bij aan vermindering van vermoeidheid.",
+      hersenen:"Draagt bij aan een normale cognitieve functie.",
+      immuun:"Draagt bij aan de normale werking van het immuunsysteem.",
+      celdeling:"Draagt bij aan een normale celdeling."
+    },
+    bronnen:["Rood vlees, lever, schaaldieren (haemijzer, wordt goed opgenomen)","Peulvruchten, volkoren, donkergroene bladgroenten, pompoenpitten (niet-haemijzer)","Vitamine C bij de maaltijd verbetert de opname; koffie en thee remmen die"],
+    tekort:"Bloedarmoede: vermoeidheid, bleekheid, kortademigheid, koude handen en voeten.",
+    let_op:"Neem extra ijzer alleen na aangetoond tekort (bloedonderzoek). Het lichaam kan ijzer nauwelijks kwijt: te veel is schadelijk, vooral bij erfelijke ijzerstapeling (hemochromatose). Een overdosis is giftig, vooral voor kinderen." },
+
+  { id:"m_Zn", type:"min", letter:"Zn", naam:"Zink", alias:"", groep:"spoor", kleur:"#577590", nrv:"10 mg",
+    functie:"Nodig voor meer dan 300 enzymen, wondgenezing, weerstand, DNA-aanmaak en de werking van hormonen.",
+    doelen:{
+      immuun:"Draagt bij aan de normale werking van het immuunsysteem.",
+      hersenen:"Draagt bij aan een normale cognitieve functie.",
+      huid:"Draagt bij aan het behoud van normale huid.",
+      haar:"Draagt bij aan het behoud van normaal haar en normale nagels.",
+      ogen:"Draagt bij aan het behoud van normaal zicht.",
+      botten:"Draagt bij aan het behoud van normale botten.",
+      oxidatie:"Draagt bij aan de bescherming van cellen tegen oxidatieve stress.",
+      celdeling:"Draagt bij aan een normale DNA-synthese en celdeling.",
+      hormonen:"Draagt bij aan het behoud van een normaal testosterongehalte in het bloed en aan een normale vruchtbaarheid en voortplanting."
+    },
+    bronnen:["Oesters, rood vlees, kaas","Pompoenpitten, noten, peulvruchten","Volkoren (de opname is lager door fytaten)"],
+    tekort:"Trage wondgenezing, haaruitval, smaakverlies, vaker infecties.",
+    let_op:"Langdurig meer dan ongeveer 25 mg per dag uit supplementen kan een kopertekort geven en misselijkheid veroorzaken." },
+
+  { id:"m_Cu", type:"min", letter:"Cu", naam:"Koper", alias:"Cuprum", groep:"spoor", kleur:"#c77d3a", nrv:"1 mg",
+    functie:"Nodig voor ijzertransport, bindweefsel, zenuwen en de aanmaak van pigment.",
+    doelen:{
+      bloed:"Draagt bij aan een normaal ijzertransport in het lichaam.",
+      zenuw:"Draagt bij aan de normale werking van het zenuwstelsel.",
+      immuun:"Draagt bij aan de normale werking van het immuunsysteem.",
+      energie:"Draagt bij aan een normale energieleverende stofwisseling.",
+      botten:"Draagt bij aan het behoud van normaal bindweefsel.",
+      haar:"Draagt bij aan een normale pigmentatie van het haar.",
+      huid:"Draagt bij aan een normale pigmentatie van de huid.",
+      oxidatie:"Draagt bij aan de bescherming van cellen tegen oxidatieve stress."
+    },
+    bronnen:["Schaaldieren, lever","Noten, zaden, cacao","Peulvruchten, volkoren"],
+    tekort:"Zeldzaam: bloedarmoede, minder witte bloedcellen, zenuwklachten (soms door te veel zink).",
+    let_op:"Te veel is giftig (o.a. bij de erfelijke ziekte van Wilson). Een gevarieerd dieet geeft genoeg; supplementen zijn zelden nodig." },
+
+  { id:"m_Mn", type:"min", letter:"Mn", naam:"Mangaan", alias:"", groep:"spoor", kleur:"#9b5de5", nrv:"2 mg",
+    functie:"Onderdeel van enzymen voor botopbouw, bindweefsel en de bescherming tegen oxidatieve stress.",
+    doelen:{
+      botten:"Draagt bij aan het behoud van normale botten en aan een normale vorming van bindweefsel.",
+      energie:"Draagt bij aan een normale energieleverende stofwisseling.",
+      oxidatie:"Draagt bij aan de bescherming van cellen tegen oxidatieve stress."
+    },
+    bronnen:["Volkoren, noten, peulvruchten","Thee, spinazie, ananas","Havermout, bruine rijst"],
+    tekort:"Zeer zeldzaam.",
+    let_op:"Te veel (via drinkwater uit eigen put, lassen, supplementen) is schadelijk voor het zenuwstelsel. Supplementen zijn niet nodig bij een gevarieerd dieet." },
+
+  { id:"m_I", type:"min", letter:"I", naam:"Jodium", alias:"Jood", groep:"spoor", kleur:"#6a4c93", nrv:"150 µg",
+    functie:"Bouwsteen van de schildklierhormonen die de stofwisseling en groei regelen.",
+    doelen:{
+      schildklier:"Draagt bij aan de normale productie van schildklierhormonen en aan een normale werking van de schildklier.",
+      energie:"Draagt bij aan een normale energieleverende stofwisseling.",
+      zenuw:"Draagt bij aan de normale werking van het zenuwstelsel.",
+      hersenen:"Draagt bij aan een normale cognitieve functie.",
+      huid:"Draagt bij aan het behoud van normale huid."
+    },
+    bronnen:["Jodiumhoudend zout, brood (met bakkerszout)","Zeevis, schaal- en schelpdieren","Zuivel, eieren; zeewier (let op: kan veel bevatten)"],
+    tekort:"Vergrote schildklier (krop), vermoeidheid, koude-intolerantie; bij zwangerschap schadelijk voor de hersenontwikkeling van het kind.",
+    let_op:"Zowel te weinig als te veel kan de schildklier ontregelen. Heb je een schildklieraandoening, overleg dan met je arts. Vermijd supplementen met kelp of zeewier." },
+
+  { id:"m_Se", type:"min", letter:"Se", naam:"Seleen", alias:"Selenium", groep:"spoor", kleur:"#f4a261", nrv:"55 µg",
+    functie:"Onderdeel van antioxidant-enzymen en van de schildklierstofwisseling.",
+    doelen:{
+      schildklier:"Draagt bij aan een normale werking van de schildklier.",
+      immuun:"Draagt bij aan de normale werking van het immuunsysteem.",
+      haar:"Draagt bij aan het behoud van normaal haar en normale nagels.",
+      oxidatie:"Draagt bij aan de bescherming van cellen tegen oxidatieve stress.",
+      hormonen:"Draagt bij aan een normale spermavorming."
+    },
+    bronnen:["Paranoten (1 à 2 per dag is genoeg)","Vis, vlees, eieren","Volkoren en champignons (afhankelijk van de bodem)"],
+    tekort:"Vermoeidheid, verzwakte weerstand, schildklierproblemen; in Europa wat vaker een lage inname door seleenarme bodem.",
+    let_op:"Kleine marge tussen genoeg en te veel (grens ongeveer 255 µg per dag): te veel geeft haar- en nagelverlies, maagklachten en een metaalsmaak. Paranoten bevatten sterk wisselende hoeveelheden." },
+
+  { id:"m_Cr", type:"min", letter:"Cr", naam:"Chroom", alias:"", groep:"spoor", kleur:"#2d6a4f", nrv:"40 µg",
+    functie:"Speelt een rol bij de stofwisseling van koolhydraten, vetten en eiwitten.",
+    doelen:{
+      stofwissel:"Draagt bij aan een normale stofwisseling van macronutriënten en aan het behoud van een normale bloedglucosespiegel."
+    },
+    bronnen:["Volkoren, broccoli, noten","Peulvruchten, vlees, specerijen","Gist en champignons"],
+    tekort:"Zeer zeldzaam.",
+    let_op:"Het bewijs dat extra chroom helpt bij mensen zonder tekort is zwak. Gebruik je medicijnen voor diabetes? Overleg dan voor je chroomsupplementen neemt." },
+
+  { id:"m_Mo", type:"min", letter:"Mo", naam:"Molybdeen", alias:"", groep:"spoor", kleur:"#457b9d", nrv:"50 µg",
+    functie:"Onderdeel van enzymen die zwavelhoudende aminozuren afbreken en afvalstoffen ontgiften.",
+    doelen:{
+      stofwissel:"Draagt bij aan een normale stofwisseling van zwavelhoudende aminozuren (eiwitbouwstenen)."
+    },
+    bronnen:["Peulvruchten, volkoren","Noten, bladgroenten","Zuivel en eieren"],
+    tekort:"Zeer zeldzaam bij een gewoon eetpatroon.",
+    let_op:"Supplementen zijn niet nodig. Zeer hoge doses kunnen de koperstofwisseling verstoren." },
+
+  { id:"m_F", type:"min", letter:"F", naam:"Fluoride", alias:"Fluor", groep:"spoor", kleur:"#48cae4", nrv:"3,5 mg",
+    functie:"Maakt tandglazuur harder en beschermt tegen gaatjes. Wordt meestal als nuttig, maar niet strikt essentieel gezien.",
+    doelen:{
+      botten:"Draagt bij aan het behoud van tandmineralisatie en dus van normale tanden."
+    },
+    bronnen:["Fluoridetandpasta (belangrijkste bron voor het gebit)","Thee, vis met graat","Sommige mineraalwaters en gefluorideerd zout"],
+    tekort:"Meer kans op gaatjes.",
+    let_op:"Te veel bij jonge kinderen geeft vlekjes op het glazuur (fluorose): kinderen mogen tandpasta niet doorslikken. Supplementen alleen op advies van tandarts of arts." }
+];
+
+
+/* ---------- Macronutriënten & overige essentiële stoffen ---------- */
+const MACROS = [
+  { id:"x_kh", type:"mac", depth:0, pad:"", letter:"KH", naam:"Koolhydraten", alias:"Suikers, zetmeel en vezels", groep:"mac", kleur:"#e9a23b",
+    functie:"De belangrijkste energiebron van het lichaam (4 kcal per gram), vooral voor hersenen en spieren. Bestaat uit suikers, zetmeel en voedingsvezels.",
+    doelen:{
+      energie:"Leveren snel en goed beschikbare energie.",
+      hersenen:"De hersenen gebruiken bij voorkeur glucose als brandstof.",
+      spieren:"Glycogeen (opgeslagen glucose) in de spieren is de brandstof bij inspanning."
+    },
+    aanbeveling:"Ongeveer 45 tot 60% van je energie (EFSA), bij voorkeur uit volkoren, groente, fruit en peulvruchten.",
+    bronnen:["Brood, granen, rijst, pasta, aardappelen","Fruit, groente, peulvruchten","Melk en yoghurt (lactose)"],
+    tekort:"Geen strikt essentiële koolhydraten: het lichaam kan glucose zelf aanmaken. Een zeer koolhydraatarm dieet geeft bij sommige mensen wel vermoeidheid, hoofdpijn en trager denken.",
+    overschot:"Veel geraffineerde producten geven pieken in de bloedsuiker en overtollige energie die als vet wordt opgeslagen.",
+    let_op:"De kwaliteit telt: kies onbewerkt en volkoren boven geraffineerd. Heb je diabetes, overleg dan met je arts of diëtist." },
+
+  { id:"x_su", type:"mac", depth:1, pad:"Koolhydraten", letter:"Su", naam:"Suikers", alias:"Glucose, fructose, sacharose, lactose", groep:"mac", kleur:"#f1c453",
+    functie:"Snelle brandstof. Suikers in fruit en melk komen samen met vezels, eiwit en vitamines; vrije suikers (frisdrank, snoep, toegevoegde suiker) niet.",
+    doelen:{
+      energie:"Leveren snel beschikbare energie."
+    },
+    aanbeveling:"Vrije (toegevoegde) suikers zo laag mogelijk; de WHO adviseert minder dan 10% van je energie.",
+    bronnen:["Fruit, melk (van nature)","Frisdrank, vruchtensap, snoep, koek","Honing, siroop, ontbijtgranen"],
+    tekort:"Geen tekort mogelijk.",
+    overschot:"Gaatjes, overgewicht en een hoger risico op diabetes type 2 bij veel vrije suikers.",
+    let_op:"Vloeibare suikers (frisdrank, sap) geven weinig verzadiging. De suiker in heel fruit is niet hetzelfde als toegevoegde suiker." },
+
+  { id:"x_ze", type:"mac", depth:1, pad:"Koolhydraten", letter:"Ze", naam:"Zetmeel", alias:"Complexe koolhydraten", groep:"mac", kleur:"#d9822b",
+    functie:"Lange ketens van glucose, langzamer verteerd dan suiker, vooral in onbewerkte producten.",
+    doelen:{
+      energie:"Zorgt voor een gelijkmatiger energielevering dan vrije suikers.",
+      stofwissel:"Langzaam verteerbaar zetmeel laat de bloedsuiker rustiger stijgen."
+    },
+    aanbeveling:"Onderdeel van je totale koolhydraatinname (45 tot 60% van de energie).",
+    bronnen:["Volkoren brood, havermout, bruine rijst","Peulvruchten, aardappelen","Pasta en graanproducten"],
+    tekort:"Geen tekort mogelijk.",
+    overschot:"Overtollige energie, vooral bij witte, sterk bewerkte producten.",
+    let_op:"Afgekoelde aardappelen, rijst en pasta bevatten meer resistent zetmeel dat de darmbacteriën voedt." },
+
+  { id:"x_vz", type:"mac", depth:1, pad:"Koolhydraten", letter:"Vz", naam:"Voedingsvezels", alias:"Niet-verteerbare koolhydraten", groep:"mac", kleur:"#7aa95c",
+    functie:"Houden de darmen in beweging, voeden de darmbacteriën en vertragen de opname van suiker en vet.",
+    doelen:{
+      spijsvertering:"Dragen bij aan een normale darmwerking.",
+      hart:"Haver- en gerstvezel (bètaglucaan) helpt het cholesterol normaal te houden (bij ongeveer 3 g per dag).",
+      stofwissel:"Vertragen de opname van suikers, waardoor de bloedsuiker minder snel stijgt."
+    },
+    aanbeveling:"Minstens 30 tot 40 g per dag (Gezondheidsraad); EFSA noemt 25 g als ondergrens.",
+    bronnen:["Volkoren producten, havermout","Peulvruchten, groente, fruit met schil","Noten, zaden, lijnzaad"],
+    tekort:"Obstipatie en een minder gezonde darmflora. De meeste mensen eten te weinig vezels.",
+    overschot:"Te snel veel opvoeren geeft winderigheid en buikkrampen.",
+    let_op:"Bouw langzaam op en drink voldoende water. Heb je een darmaandoening (zoals prikkelbare darm), laat je dan begeleiden door een diëtist." },
+
+  { id:"x_ei", type:"mac", depth:0, pad:"", letter:"Ei", naam:"Eiwitten", alias:"Proteïnen", groep:"mac", kleur:"#c0504d",
+    functie:"Bouwstof voor spieren, huid, haar, enzymen, hormonen en afweerstoffen (4 kcal per gram). Bestaat uit 20 aminozuren, waarvan er 9 essentieel zijn.",
+    doelen:{
+      spieren:"Draagt bij aan de groei en het behoud van spiermassa.",
+      botten:"Draagt bij aan het behoud van normale botten.",
+      immuun:"Antistoffen en afweercellen worden uit eiwit opgebouwd.",
+      huid:"Collageen, het bindweefsel in de huid, is een eiwit.",
+      haar:"Haar en nagels bestaan uit het eiwit keratine.",
+      stofwissel:"Eiwitten leveren de bouwstenen voor enzymen en hormonen."
+    },
+    aanbeveling:"Ongeveer 0,83 g per kg lichaamsgewicht per dag voor volwassenen (EFSA en Gezondheidsraad). Ouderen en sporters hebben vaak meer nodig.",
+    bronnen:["Vlees, vis, eieren, zuivel","Peulvruchten, tofu, tempeh","Noten, zaden, volkoren"],
+    tekort:"Spierverlies, trage wondgenezing, vaker infecties; vooral bij ouderen een risico.",
+    overschot:"Zeer hoge innames geven geen bewezen extra voordeel. Bij nierziekte kan beperken juist nodig zijn.",
+    let_op:"Plantaardige bronnen vullen elkaar aan (bijvoorbeeld peulvruchten met granen). Heb je een nieraandoening, bespreek je eiwitinname dan met je arts." },
+
+  { id:"x_aa", type:"mac", depth:1, pad:"Eiwitten", letter:"AZ", naam:"Essentiële aminozuren", alias:"9 aminozuren die je niet zelf kunt maken", groep:"mac", kleur:"#a63d40", ess:true,
+    functie:"Histidine, isoleucine, leucine, lysine, methionine, fenylalanine, threonine, tryptofaan en valine. Je lichaam kan ze niet zelf maken, dus je moet ze uit voeding halen. Dierlijke eiwitten bevatten ze allemaal; bij plantaardige is vaak één beperkend (lysine in granen, methionine in peulvruchten).",
+    doelen:{
+      spieren:"Leucine speelt een sleutelrol bij de aanmaak van spiereiwit.",
+      hersenen:"Tryptofaan en fenylalanine zijn grondstof voor boodschapperstoffen zoals serotonine en dopamine."
+    },
+    aanbeveling:"Zitten in je totale eiwitinname; een gevarieerd eetpatroon dekt dit.",
+    bronnen:["Eieren, vlees, vis, zuivel","Soja, quinoa, boekweit","Peulvruchten gecombineerd met granen"],
+    tekort:"Bij langdurig eenzijdig eten: spierverlies, vermoeidheid, haaruitval.",
+    overschot:"Losse aminozuursupplementen geven geen extra voordeel bij voldoende eiwit.",
+    let_op:"Supplementen zijn zelden nodig. Bij vegetarisch of veganistisch eten gaat het om variatie, niet om het aantal grammen per aminozuur." },
+
+  { id:"x_vet", type:"mac", depth:0, pad:"", letter:"V", naam:"Vetten", alias:"Lipiden", groep:"mac", kleur:"#e0a526",
+    functie:"Dichtste energiebron (9 kcal per gram), bouwstof voor celmembranen en hersenen, en nodig voor de opname van vitamine A, D, E en K.",
+    doelen:{
+      energie:"Leveren veel energie in weinig volume en zijn een energiereserve.",
+      hersenen:"De hersenen bestaan voor ongeveer 60% uit vet.",
+      hormonen:"Cholesterol en vetten zijn grondstof voor steroïdhormonen."
+    },
+    aanbeveling:"Ongeveer 20 tot 35% van je energie (EFSA). Het type vet telt zwaarder dan de hoeveelheid.",
+    bronnen:["Olijf-, koolzaad- en zonnebloemolie","Noten, zaden, avocado, vette vis","Zuivel, vlees (vooral verzadigd)"],
+    tekort:"Te weinig essentiële vetzuren geeft een droge huid en slechte wondgenezing; te weinig vet geeft een tekort aan energie en vetoplosbare vitamines.",
+    overschot:"Overtollige energie wordt opgeslagen; verzadigd vet en transvet verhogen het LDL-cholesterol.",
+    let_op:"Kies waar mogelijk onverzadigde vetten (olijfolie, noten, vis) en beperk verzadigd en transvet." },
+
+  { id:"x_vv", type:"mac", depth:1, pad:"Vetten", letter:"VV", naam:"Verzadigde vetten", alias:"Vooral dierlijk, kokos- en palmolie", groep:"mac", kleur:"#b7791f",
+    functie:"Vetten zonder dubbele bindingen, meestal vast bij kamertemperatuur. Het lichaam kan ze zelf maken: niet essentieel.",
+    doelen:{
+      energie:"Leveren energie, maar het lichaam heeft ze niet nodig uit voeding.",
+      hart:"Verzadigd vet vervangen door onverzadigd vet draagt bij aan het behoud van een normaal bloedcholesterol."
+    },
+    aanbeveling:"Zo laag mogelijk; maximaal 10% van je energie (Gezondheidsraad).",
+    bronnen:["Boter, kaas, room, volle zuivel","Vette vleeswaren en vlees","Kokosolie, palmolie, koek, gebak, frituurproducten"],
+    tekort:"Geen tekort mogelijk.",
+    overschot:"Verhoogt het LDL-cholesterol en daarmee het risico op hart- en vaatziekten.",
+    let_op:"Vervang waar mogelijk door onverzadigd vet. Bij familiair verhoogd cholesterol of hart- en vaatziekte geldt een strengere richtlijn." },
+
+  { id:"x_eo", type:"mac", depth:1, pad:"Vetten", letter:"EO", naam:"Enkelvoudig onverzadigde vetten", alias:"Omega-9, oliezuur", groep:"mac", kleur:"#6a994e",
+    functie:"Vetzuren met één dubbele binding, vooral in olijfolie en noten. Het lichaam maakt ze zelf: niet essentieel.",
+    doelen:{
+      hart:"Vervangen van verzadigd vet door onverzadigd vet draagt bij aan het behoud van een normaal bloedcholesterol."
+    },
+    aanbeveling:"Geen eigen norm; een goed deel van je vetinname mag hieruit bestaan.",
+    bronnen:["Olijfolie, koolzaadolie","Avocado, amandelen, hazelnoten, pinda’s","Cashewnoten en pecannoten"],
+    tekort:"Geen tekort mogelijk.",
+    overschot:"Energierijk: te veel levert overtollige calorieën.",
+    let_op:"Een belangrijk onderdeel van het mediterrane dieet. Vet blijft energierijk, ook als het gezond is." },
+
+  { id:"x_pu", type:"mac", depth:1, pad:"Vetten", letter:"MO", naam:"Meervoudig onverzadigde vetten", alias:"Omega-3 en omega-6", groep:"mac", kleur:"#2a9d8f", ess:true,
+    functie:"Vetzuren met meer dan één dubbele binding. Twee ervan zijn essentieel: linolzuur (omega-6) en alfa-linoleenzuur (omega-3).",
+    doelen:{
+      hart:"Dragen bij aan het behoud van een normaal bloedcholesterol, wanneer ze verzadigd vet vervangen.",
+      hersenen:"Zijn bouwstof van hersencellen en celmembranen.",
+      huid:"Houden de huidbarrière op orde."
+    },
+    aanbeveling:"Zorg voor zowel omega-6 als omega-3; zie de onderdelen hieronder voor de richtwaarden.",
+    bronnen:["Vette vis, noten, zaden","Zonnebloem-, lijnzaad- en koolzaadolie","Margarine en halvarine (vloeibaar)"],
+    tekort:"Droge, schilferige huid, slechte wondgenezing; bij ernstig tekort zenuwklachten en slecht zien.",
+    overschot:"Energierijk; bij veel bewerkte oliën ontstaat gemakkelijk een onevenwicht tussen omega-6 en omega-3.",
+    let_op:"Meervoudig onverzadigde olie oxideert snel: bewaar donker en koel, en verhit niet te sterk." },
+
+  { id:"x_o3", type:"mac", depth:2, pad:"Vetten › Meervoudig onverzadigd", letter:"ω3", naam:"Omega-3", alias:"ALA, EPA en DHA", groep:"mac", kleur:"#1b7f9e", ess:true,
+    functie:"Familie van vetzuren met de eerste dubbele binding op de derde plaats. ALA is essentieel; EPA en DHA komen vooral uit vette vis en algen en kunnen slechts beperkt uit ALA gemaakt worden.",
+    doelen:{
+      hart:"EPA en DHA dragen bij aan een normale hartfunctie (bij 250 mg per dag).",
+      hersenen:"DHA draagt bij aan het behoud van een normale hersenfunctie (bij 250 mg per dag).",
+      ogen:"DHA draagt bij aan het behoud van normaal zicht (bij 250 mg per dag)."
+    },
+    aanbeveling:"EPA + DHA: 250 mg per dag (EFSA); de Gezondheidsraad noemt ongeveer 450 mg, wat neerkomt op 1 tot 2 porties vis per week waarvan één vette. ALA: ongeveer 0,5% van je energie.",
+    bronnen:["Vette vis: zalm, haring, makreel, sardines","Lijnzaad, chiazaad, walnoten, koolzaadolie","Algenolie (plantaardige bron van DHA)"],
+    tekort:"Droge huid en slechtere concentratie; echte tekorten zijn zeldzaam, een lage inname is dat niet.",
+    overschot:"Zeer hoge doses visolie kunnen de bloedstolling remmen en maagklachten geven.",
+    let_op:"Gebruik je bloedverdunners, overleg dan met je arts voor je visolie neemt. Vegetariërs en veganisten kunnen algenolie gebruiken." },
+
+  { id:"x_ala", type:"mac", depth:3, pad:"Vetten › Meervoudig onverzadigd › Omega-3", letter:"ALA", naam:"Alfa-linoleenzuur (ALA)", alias:"Plantaardig omega-3", groep:"mac", kleur:"#3d9970", ess:true,
+    functie:"Plantaardig omega-3-vetzuur dat het lichaam niet zelf kan maken. Slechts een klein deel wordt omgezet in EPA en DHA.",
+    doelen:{
+      hart:"Draagt bij aan het behoud van een normaal bloedcholesterol (bij 2 g per dag)."
+    },
+    aanbeveling:"Ongeveer 0,5% van je energie (EFSA), ruwweg 1 tot 2 g per dag.",
+    bronnen:["Lijnzaad en lijnzaadolie, chiazaad","Walnoten","Koolzaad- en sojaolie"],
+    tekort:"Zeldzaam; droge huid en zenuwklachten bij langdurig ernstig tekort.",
+    overschot:"Geen bekende problemen bij gewone voeding.",
+    let_op:"Hele lijnzaadjes gaan onverteerd door het lichaam: gebruik geplet of gemalen lijnzaad." },
+
+  { id:"x_epa", type:"mac", depth:3, pad:"Vetten › Meervoudig onverzadigd › Omega-3", letter:"DHA", naam:"EPA en DHA", alias:"Omega-3 uit vis en algen", groep:"mac", kleur:"#0d6e8a",
+    functie:"Lange-keten omega-3-vetzuren. DHA is een belangrijke bouwstof van hersenen en netvlies. Niet strikt essentieel, maar de omzetting uit ALA is beperkt.",
+    doelen:{
+      hersenen:"DHA draagt bij aan het behoud van een normale hersenfunctie (bij 250 mg per dag).",
+      ogen:"DHA draagt bij aan het behoud van normaal zicht (bij 250 mg per dag).",
+      hart:"EPA en DHA dragen bij aan een normale hartfunctie (bij 250 mg per dag)."
+    },
+    aanbeveling:"250 mg per dag (EFSA); Gezondheidsraad ongeveer 450 mg.",
+    bronnen:["Zalm, haring, makreel, sardines, ansjovis","Visolie, levertraan (let op vitamine A en D)","Algenolie"],
+    tekort:"Droge ogen en huid, minder concentratie; vooral bij mensen die nooit vis eten.",
+    overschot:"Zie omega-3: zeer hoge doses kunnen de bloedstolling beïnvloeden.",
+    let_op:"Levertraan bevat ook veel vitamine A en D; houd je aan de dosering. Zwangeren overleggen over vissoorten met veel kwik." },
+
+  { id:"x_o6", type:"mac", depth:2, pad:"Vetten › Meervoudig onverzadigd", letter:"ω6", naam:"Omega-6", alias:"Linolzuur en verwanten", groep:"mac", kleur:"#c26a2e", ess:true,
+    functie:"Familie van vetzuren met de eerste dubbele binding op de zesde plaats. Linolzuur is essentieel; in onze voeding zit er meestal ruim genoeg van.",
+    doelen:{
+      huid:"Linolzuur is nodig voor een intacte huidbarrière.",
+      hart:"Linolzuur draagt bij aan het behoud van een normaal bloedcholesterol (bij 10 g per dag)."
+    },
+    aanbeveling:"Linolzuur: ongeveer 4% van je energie (EFSA).",
+    bronnen:["Zonnebloem-, distel-, mais- en sojaolie","Noten en zaden","Margarine en bewerkte producten"],
+    tekort:"Zeldzaam: schilferige huid, haaruitval, trage wondgenezing.",
+    overschot:"Er wordt gediscussieerd over de ideale verhouding met omega-3; belangrijker is dat je voldoende omega-3 binnenkrijgt.",
+    let_op:"Omega-6 is niet slecht: het is essentieel. Het gaat om de keuze voor onbewerkte bronnen (noten, zaden) boven bewerkte producten." },
+
+  { id:"x_la", type:"mac", depth:3, pad:"Vetten › Meervoudig onverzadigd › Omega-6", letter:"LA", naam:"Linolzuur (LA)", alias:"Essentieel omega-6", groep:"mac", kleur:"#d98840", ess:true,
+    functie:"Het belangrijkste omega-6-vetzuur en essentieel: het lichaam maakt het niet zelf. Nodig voor de huidbarrière en als bouwstof voor celmembranen.",
+    doelen:{
+      huid:"Is nodig voor een intacte huidbarrière.",
+      hart:"Draagt bij aan het behoud van een normaal bloedcholesterol (bij 10 g per dag)."
+    },
+    aanbeveling:"Ongeveer 4% van je energie (EFSA), ruwweg 8 tot 10 g per dag.",
+    bronnen:["Zonnebloemolie, distelolie, maisolie","Walnoten, zonnebloempitten, pompoenpitten","Sesamzaad, soja"],
+    tekort:"Zeldzaam: droge huid, haaruitval.",
+    overschot:"Geen probleem bij gewone voeding.",
+    let_op:"Meestal geen supplement nodig." },
+
+  { id:"x_tv", type:"mac", depth:1, pad:"Vetten", letter:"TV", naam:"Transvetten", alias:"Ongewenst, industrieel gehard vet", groep:"mac", kleur:"#6b7280",
+    functie:"Vet met een afwijkende structuur, ontstaan bij het harden van plantaardige olie (en in kleine hoeveelheden van nature in vlees en zuivel). Het lichaam heeft het niet nodig.",
+    doelen:{},
+    aanbeveling:"Zo laag mogelijk; de WHO adviseert minder dan 1% van je energie. In de EU is maximaal 2 g per 100 g vet toegestaan.",
+    bronnen:["Gefrituurde en gebakken snacks","Sommige koeken, gebak en harde margarines","Kleine hoeveelheden in vlees en zuivel (van nature)"],
+    tekort:"Geen tekort mogelijk.",
+    overschot:"Verhogen het LDL-cholesterol en verlagen het HDL; groter risico op hart- en vaatziekten.",
+    let_op:"Op etiketten: let op gedeeltelijk gehard plantaardig vet. In Nederland komen ze veel minder voor dan vroeger." },
+
+  { id:"x_h2o", type:"mac", depth:0, pad:"", letter:"H₂O", naam:"Water", alias:"Vocht", groep:"ove", kleur:"#3a86ff", ess:true,
+    functie:"Ongeveer 60% van het lichaam. Nodig voor temperatuurregeling, transport van voedingsstoffen, afvoer van afvalstoffen en elke celreactie.",
+    doelen:{
+      vocht:"Draagt bij aan een normale temperatuurregeling en aan het behoud van normale lichamelijke functies.",
+      hersenen:"Draagt bij aan het behoud van normale cognitieve functies bij voldoende inname.",
+      spijsvertering:"Houdt de ontlasting zacht, vooral samen met voedingsvezels."
+    },
+    aanbeveling:"Totaal ongeveer 2,0 liter voor vrouwen en 2,5 liter voor mannen per dag uit drank én voeding (EFSA); de Voedingscentrum-richtlijn is 1,5 tot 2 liter drinken.",
+    bronnen:["Water, thee, koffie (telt mee)","Melk, soep","Fruit en groente (water uit voeding)"],
+    tekort:"Uitdroging: dorst, hoofdpijn, vermoeidheid, donkere urine, minder concentratie. Ouderen voelen dorst minder.",
+    overschot:"Zeer veel water in korte tijd kan het natrium in het bloed te laag maken (hyponatriëmie).",
+    let_op:"Bij hartfalen of nierziekte kan de arts een vochtbeperking voorschrijven. Bij hitte, koorts, diarree of sporten is meer nodig." },
+
+  { id:"x_cho", type:"mac", depth:0, pad:"", letter:"Ch", naam:"Choline", alias:"Vitamine-achtige stof", groep:"ove", kleur:"#8338ec", ess:true,
+    functie:"Bouwsteen van celmembranen en van de boodschapperstof acetylcholine, en nodig voor het vettransport in de lever. Het lichaam maakt er zelf wat van, maar niet genoeg.",
+    doelen:{
+      stofwissel:"Draagt bij aan een normale vetstofwisseling en aan het behoud van een normale leverfunctie.",
+      homocys:"Draagt bij aan een normale homocysteïnestofwisseling.",
+      hersenen:"Is grondstof voor acetylcholine, een belangrijke boodschapperstof in hersenen en spieren."
+    },
+    aanbeveling:"Adequate inname: 400 mg per dag voor volwassenen (EFSA).",
+    bronnen:["Eieren (vooral de dooier), lever","Vis, vlees, gevogelte","Soja, broccoli, spruitjes, noten"],
+    tekort:"Leververvetting en spierschade; echte tekorten zijn zeldzaam.",
+    overschot:"Hoge doses (meer dan ongeveer 3 g per dag) geven lage bloeddruk, zweten en een visgeur.",
+    let_op:"Mensen die geen eieren of dierlijke producten eten, en zwangeren, halen er soms te weinig binnen." }
+];
+
+/* ---------- Uitbreiding: extra stoffen (kind-items hangen onder een ouder) ---------- */
+const X = (id, parent, letter, naam, alias, functie, doelen, aanbeveling, bronnen, tekort, overschot, let_op, o = {}) =>
+  ({ id, parent, letter, naam, alias, functie, doelen, aanbeveling, bronnen, tekort, overschot, let_op, ...o });
+
+const EXTRA = [
+
+/* ===== Koolhydraten ===== */
+X("x_glu","x_su","Glu","Glucose","Druivensuiker",
+  "De belangrijkste brandstof van lichaamscellen en de enige brandstof die rode bloedcellen kunnen gebruiken. Zit vrij in fruit en honing en komt vooral vrij bij de vertering van zetmeel.",
+  { energie:"Is de directe brandstof voor vrijwel alle lichaamscellen.",
+    hersenen:"De hersenen verbruiken per dag ongeveer 100 tot 120 g glucose." },
+  "Geen aparte norm; telt mee bij je totale koolhydraten (45 tot 60% van je energie).",
+  ["Zetmeelrijke producten (na vertering)","Honing, druiven, dadels","Dextrose, glucosestroop, sportdranken"],
+  "Een te lage bloedsuiker (hypoglykemie): trillen, zweten, hoofdpijn, verwardheid.",
+  "Langdurig een te hoge bloedsuiker (zoals bij diabetes) beschadigt bloedvaten, zenuwen en nieren.",
+  "Gebruik je insuline of bloedsuikerverlagende medicijnen en krijg je een hypo? Dan is snelle glucose juist het eerste middel."),
+
+X("x_fru","x_su","Fru","Fructose","Fruitsuiker",
+  "Suiker uit fruit, honing en groente. Wordt vooral in de lever verwerkt en is bestanddeel van gewone suiker (sacharose) en van glucose-fructosestroop in frisdrank.",
+  { energie:"Levert energie, maar wordt grotendeels in de lever omgezet in glucose, glycogeen of vet." },
+  "Vrije suikers samen onder de 10% van je energie (WHO); heel fruit telt niet mee als vrije suiker.",
+  ["Fruit, honing, agavesiroop","Glucose-fructosestroop in frisdrank en snoep","Gewone suiker (de helft is fructose)"],
+  "Geen tekort mogelijk.",
+  "Grote hoeveelheden uit gezoete dranken zijn gekoppeld aan leververvetting, hoge triglyceriden en overgewicht.",
+  "Heb je fructose-malabsorptie of erfelijke fructose-intolerantie, dan geeft fructose buikklachten of is het gevaarlijk; laat je begeleiden door een arts of diëtist."),
+
+X("x_sac","x_su","Sac","Sacharose","Tafelsuiker (glucose + fructose)",
+  "Gewone suiker uit suikerbiet of suikerriet: één molecuul glucose gekoppeld aan één molecuul fructose. Wordt in de dunne darm gesplitst.",
+  { energie:"Levert snel beschikbare energie (4 kcal per gram)." },
+  "Zo weinig mogelijk toegevoegd; maximaal 10% van je energie aan vrije suikers (WHO).",
+  ["Suiker, snoep, koek, gebak","Frisdrank, vruchtensap, ontbijtgranen","Siropen en veel kant-en-klare producten"],
+  "Geen tekort mogelijk.",
+  "Veel suiker geeft gaatjes en een te hoge energie-inname; frequent snoepen is voor het gebit slechter dan de totale hoeveelheid.",
+  "Suiker zit veel in producten waar je het niet verwacht (sauzen, brood, yoghurt). Controleer op het etiket de regel ‘waarvan suikers’."),
+
+X("x_lac","x_su","Lac","Lactose","Melksuiker (glucose + galactose)",
+  "De suiker in melk en zuivel. Wordt in de dunne darm gesplitst door het enzym lactase.",
+  { energie:"Levert energie uit melk en zuivel." },
+  "Geen norm; meestal geen reden om te beperken, tenzij je lactose niet goed verdraagt.",
+  ["Melk, yoghurt, vla, ijs","Verse kaas en room","Rijpe kaas bevat nauwelijks lactose"],
+  "Geen tekort mogelijk.",
+  "Bij lactose-intolerantie (te weinig lactase) komt lactose in de dikke darm: buikpijn, winderigheid en diarree.",
+  "Lactosevrije zuivel of lactase-druppels helpen. Laat je niet zonder meer alle zuivel weglaten, anders loop je calcium en jodium mis."),
+
+X("x_pol","x_kh","Po","Suikeralcoholen (polyolen)","Xylitol, sorbitol, maltitol, erythritol",
+  "Zoetstoffen die op suiker lijken maar minder calorieën leveren en minder de bloedsuiker en het gebit aantasten. In de EU rekenen we ongeveer 2,4 kcal per gram, voor erythritol 0.",
+  { botten:"Suikervrije kauwgom met xylitol, sorbitol of vergelijkbare polyolen draagt bij aan het behoud van tandmineralisatie.",
+    stofwissel:"Verhogen de bloedglucose minder dan suiker." },
+  "Geen norm; de laxerende drempel ligt voor veel mensen rond 20 tot 50 g per dag (verschilt per soort).",
+  ["Suikervrije kauwgom, snoep en light-producten","Fruit (sorbitol in pruim, appel, peer)","Erythritol of xylitol als suikervervanger"],
+  "Geen tekort mogelijk.",
+  "Te veel geeft winderigheid, buikpijn en diarree; producten met meer dan 10% polyolen vermelden dat.",
+  "Xylitol is zeer giftig voor honden. Heb je een prikkelbare darm, dan kunnen polyolen klachten geven (FODMAP)."),
+
+X("x_vzo","x_vz","Op","Oplosbare vezels","Pectine, bètaglucaan, inuline, psyllium",
+  "Vezels die in water een gel vormen. Vertragen de maaglediging en de opname van suiker en cholesterol en worden door darmbacteriën gefermenteerd.",
+  { hart:"Bètaglucaan uit haver of gerst draagt bij aan het behoud van een normaal bloedcholesterol (bij 3 g per dag); pectine bij 6 g per dag.",
+    stofwissel:"Vertragen de opname van suikers, waardoor de bloedsuiker na een maaltijd minder snel stijgt.",
+    spijsvertering:"Voeden de darmflora en maken de ontlasting zachter." },
+  "Onderdeel van je totale vezelinname (30 tot 40 g per dag).",
+  ["Haver, gerst, peulvruchten","Appel, citrusvruchten, wortel (pectine)","Lijnzaad, psyllium (vlozaad)"],
+  "Hogere cholesterol en bloedsuikerpieken; vaak onderdeel van een te lage totale vezelinname.",
+  "Te snel veel geeft winderigheid en een opgeblazen gevoel.",
+  "Neem vezelsupplementen (zoals psyllium) met veel water en op enige afstand van medicijnen: ze kunnen de opname vertragen."),
+
+X("x_vzn","x_vz","On","Onoplosbare vezels","Cellulose, hemicellulose, lignine",
+  "Vezels die niet oplossen en nauwelijks gefermenteerd worden. Ze nemen vocht op, vergroten het ontlastingvolume en versnellen de darmpassage.",
+  { spijsvertering:"Tarwezemelvezels dragen bij aan een versnelde darmpassage (bij 10 g per dag)." },
+  "Onderdeel van je totale vezelinname (30 tot 40 g per dag).",
+  ["Volkoren brood, zemelen, volkoren pasta","Groente met schil, noten, zaden","Peulvruchten"],
+  "Obstipatie, harde ontlasting en een hoger risico op divertikels.",
+  "Te veel in korte tijd geeft winderigheid en kan bij te weinig drinken juist obstipatie verergeren.",
+  "Bij sommige darmaandoeningen (zoals een vernauwing of ontsteking) is vezelbeperking nodig; volg dan het advies van je arts."),
+
+X("x_rs","x_ze","RS","Resistent zetmeel","Zetmeel dat de dunne darm ontloopt",
+  "Zetmeel dat niet in de dunne darm wordt verteerd. Het gaat naar de dikke darm en wordt daar gefermenteerd tot korte-keten vetzuren.",
+  { spijsvertering:"Voedt de darmflora en levert korte-keten vetzuren voor de darmwand.",
+    stofwissel:"Laat de bloedsuiker na een maaltijd rustiger stijgen dan snel verteerbaar zetmeel." },
+  "Geen norm; wordt meegeteld in vezels en zetmeel.",
+  ["Afgekoelde aardappelen, rijst en pasta","Peulvruchten, onrijpe (groene) banaan","Havermout, volkoren granen"],
+  "Geen tekort mogelijk.",
+  "Veel tegelijk kan winderigheid geven.",
+  "Afkoelen en opnieuw opwarmen behoudt een deel van het resistente zetmeel. Bewaar gekookte rijst koel en eet hem snel op (voedselveiligheid)."),
+
+/* ===== Alcohol ===== */
+X("x_alc","","Al","Alcohol","Ethanol",
+  "Levert 7 kcal per gram en telt daarom soms als vierde energieleverancier. Het is geen voedingsstof: het lichaam heeft het niet nodig en breekt het in de lever af.",
+  {},
+  "De Gezondheidsraad adviseert geen alcohol te drinken, of maximaal 1 glas per dag; tijdens zwangerschap en borstvoeding helemaal niet.",
+  ["Bier, wijn, gedistilleerd","Mixdranken, likeuren","Kleine hoeveelheden in sommige gefermenteerde producten"],
+  "Geen tekort mogelijk.",
+  "Verhoogt het risico op leverziekte, hoge bloeddruk, hartritmestoornissen en meerdere soorten kanker; er is geen veilige ondergrens.",
+  "Alcohol geeft veel ‘lege’ energie, verstoort slaap en vitamine B1, B9 en zink-huishouding, en werkt in op veel medicijnen. Zoek hulp als je moeite hebt om te minderen.",
+  { groep:"nie", type:"mac", fam:"alc", nogoal:"Heeft geen nuttige functie voor het lichaam; het is verstandig de inname zo laag mogelijk te houden." }),
+
+/* ===== Eiwitten: aminozuren ===== */
+X("x_his","x_aa","His","Histidine","Essentieel aminozuur",
+  "Grondstof voor histamine en carnosine; bestanddeel van hemoglobine. Wordt bij baby’s en kinderen extra belangrijk gevonden.",
+  { immuun:"Is de grondstof voor histamine, een signaalstof bij afweerreacties.",
+    zenuw:"Histamine werkt ook als boodschapperstof in de hersenen." },
+  "Ongeveer 10 mg per kg lichaamsgewicht per dag (EFSA).",
+  ["Vlees, vis, eieren, zuivel","Soja, tarwekiem, peulvruchten","Noten en zaden"],
+  "Zeldzaam; kan bij langdurig eenzijdige voeding voorkomen.",
+  "Geen bekende problemen uit voeding.",
+  "Een hoge histamine-inname uit voeding is iets anders dan histidine zelf; bij histamine-intolerantie spelen vooral gerijpte producten een rol.",
+  { ess:true }),
+
+X("x_ile","x_aa","Ile","Isoleucine","Essentieel aminozuur (BCAA)",
+  "Vertakt-keten aminozuur (BCAA). Spiercellen kunnen het direct als energiebron gebruiken en het is nodig voor hemoglobine en de regeling van de bloedsuiker.",
+  { spieren:"Bouwsteen van spiereiwit en energiebron voor werkende spieren.",
+    energie:"Wordt in de spieren direct voor energie gebruikt tijdens inspanning." },
+  "Ongeveer 20 mg per kg lichaamsgewicht per dag (EFSA).",
+  ["Kip, vis, eieren, kaas","Linzen, kikkererwten, soja","Noten, zaden"],
+  "Zeldzaam; spierverlies en vermoeidheid bij langdurig te weinig eiwit.",
+  "Hoge doses los aminozuur kunnen de balans met de andere BCAA’s verstoren.",
+  "Losse BCAA-supplementen geven bij voldoende eiwitinname geen extra voordeel.",
+  { ess:true }),
+
+X("x_leu","x_aa","Leu","Leucine","Essentieel aminozuur (BCAA)",
+  "Het aminozuur met de sterkste prikkel op de aanmaak van spiereiwit. Er is in verhouding veel leucine nodig.",
+  { spieren:"Geeft het signaal voor de aanmaak van spiereiwit, vooral na krachttraining of op hogere leeftijd.",
+    energie:"Wordt tijdens inspanning in de spier als brandstof gebruikt." },
+  "Ongeveer 39 mg per kg lichaamsgewicht per dag (EFSA); voor ouderen wordt vaak 2,5 tot 3 g per maaltijd genoemd.",
+  ["Zuivel (vooral wei), eieren, vlees, vis","Soja, tofu, peulvruchten","Pompoenpitten, noten"],
+  "Spierverlies bij te weinig eiwit, vooral bij ouderen.",
+  "Geen bekende problemen bij normale voeding.",
+  "Een eiwitrijke maaltijd of -shake verdeeld over de dag werkt voor spierbehoud beter dan alles in één maaltijd.",
+  { ess:true }),
+
+X("x_lys","x_aa","Lys","Lysine","Essentieel aminozuur",
+  "Nodig voor collageen, de opname van calcium en de aanmaak van carnitine. Is in granen vaak het beperkende aminozuur.",
+  { botten:"Draagt bij aan de vorming van collageen in bot en kraakbeen.",
+    huid:"Is nodig voor het opbouwen van collageen in de huid.",
+    spieren:"Bouwsteen van spiereiwit." },
+  "Ongeveer 30 mg per kg lichaamsgewicht per dag (EFSA).",
+  ["Vlees, vis, eieren, zuivel","Peulvruchten, soja, quinoa, pistachenoten","Granen bevatten weinig lysine"],
+  "Bij veganisten die vooral granen eten kan lysine tekortschieten: vermoeidheid, haaruitval, minder weerstand.",
+  "Hoge doses supplementen kunnen maagklachten geven.",
+  "Combineer granen met peulvruchten om voldoende lysine te krijgen.",
+  { ess:true }),
+
+X("x_met","x_aa","Met","Methionine","Essentieel aminozuur (zwavelhoudend)",
+  "Zwavelhoudend aminozuur dat de bouwsteen is voor cysteïne en glutathion, en dat methylgroepen levert voor de stofwisseling.",
+  { homocys:"Wordt in het lichaam omgezet in homocysteïne, dat met vitamine B6, B9 en B12 verder wordt afgebroken.",
+    oxidatie:"Is via cysteïne de grondstof voor glutathion, een belangrijke antioxidant.",
+    haar:"Zwavel uit methionine zit in keratine van haar en nagels." },
+  "Methionine plus cysteïne samen ongeveer 19 mg per kg lichaamsgewicht per dag (EFSA).",
+  ["Eieren, vis, vlees, zuivel","Paranoten, sesamzaad","Peulvruchten bevatten er weinig van"],
+  "Bij veganisten die weinig noten, zaden en graan eten kan de inname laag zijn.",
+  "Hoge doses (supplementen) kunnen het homocysteïnegehalte verhogen als B-vitamines schieten.",
+  "Gebruik geen hoge doses methionine zonder medisch advies.",
+  { ess:true }),
+
+X("x_phe","x_aa","Phe","Fenylalanine","Essentieel aminozuur (aromatisch)",
+  "Grondstof voor tyrosine en daarmee voor dopamine, adrenaline, noradrenaline en melanine.",
+  { hersenen:"Via tyrosine de grondstof voor dopamine en noradrenaline.",
+    zenuw:"Is nodig voor de aanmaak van boodschapperstoffen.",
+    huid:"Via tyrosine de grondstof voor melanine, het pigment van huid en haar." },
+  "Fenylalanine plus tyrosine samen ongeveer 41 mg per kg lichaamsgewicht per dag (EFSA).",
+  ["Eieren, vlees, vis, zuivel","Soja, noten, zaden","Aspartaam (zoetstof) bevat het ook"],
+  "Zeldzaam; kan bij langdurig te weinig eiwit voorkomen.",
+  "Schadelijk bij fenylketonurie (PKU).",
+  "Heb je PKU (aangeboren stofwisselingsziekte), dan moet je fenylalanine strikt beperken en op etiketten met aspartaam letten (‘bevat een bron van fenylalanine’).",
+  { ess:true }),
+
+X("x_thr","x_aa","Thr","Threonine","Essentieel aminozuur",
+  "Bestanddeel van collageen, elastine en van mucine, het slijm dat de darmwand beschermt.",
+  { spijsvertering:"Is hoofdbestanddeel van mucine, de beschermende slijmlaag van de darm.",
+    huid:"Draagt bij aan collageen en elastine.",
+    immuun:"Is nodig voor de aanmaak van antistoffen." },
+  "Ongeveer 15 mg per kg lichaamsgewicht per dag (EFSA).",
+  ["Zuivel, eieren, vlees, vis","Peulvruchten, soja","Zaden en noten"],
+  "Zeldzaam bij gevarieerde voeding.",
+  "Geen bekende problemen uit voeding.",
+  "Losse supplementen zijn niet nodig.",
+  { ess:true }),
+
+X("x_trp","x_aa","Trp","Tryptofaan","Essentieel aminozuur",
+  "Grondstof voor serotonine, melatonine en een deel van vitamine B3 (niacine). Het aminozuur dat in voeding het minst voorkomt.",
+  { hersenen:"Is de grondstof voor serotonine en melatonine.",
+    zenuw:"Serotonine is een belangrijke boodschapperstof in de hersenen en darm.",
+    energie:"Ongeveer 60 mg tryptofaan kan in het lichaam omgezet worden in 1 mg niacine." },
+  "Ongeveer 4 mg per kg lichaamsgewicht per dag (EFSA).",
+  ["Kalkoen, kip, eieren, vis","Kaas, melk","Pompoenpitten, soja, haver"],
+  "Zeer laag bij eenzijdig maïsgebruik (pellagra door niacinetekort).",
+  "Hoge doses geven misselijkheid en slaperigheid.",
+  "Gebruik je antidepressiva (zoals SSRI’s), dan kunnen tryptofaan- of 5-HTP-supplementen een serotoninesyndroom veroorzaken. Vraag eerst je arts.",
+  { ess:true }),
+
+X("x_val","x_aa","Val","Valine","Essentieel aminozuur (BCAA)",
+  "Derde vertakt-keten aminozuur (BCAA). Wordt in de spier gebruikt voor herstel en energie.",
+  { spieren:"Draagt bij aan spierherstel en spieropbouw.",
+    energie:"Wordt tijdens inspanning als brandstof gebruikt." },
+  "Ongeveer 26 mg per kg lichaamsgewicht per dag (EFSA).",
+  ["Zuivel, eieren, vlees, vis","Soja, peulvruchten","Noten en volkoren"],
+  "Zeldzaam; spierverlies bij langdurig te weinig eiwit.",
+  "Zeer hoge doses supplementen zijn niet nodig en niet bewezen nuttig.",
+  "Voldoende totaal eiwit en variatie dekken de behoefte; losse BCAA’s zijn meestal overbodig.",
+  { ess:true }),
+
+X("x_ca","x_ei","VE","Voorwaardelijk essentiële aminozuren","Meestal zelf te maken, soms te weinig",
+  "Aminozuren die een gezond lichaam zelf kan maken, maar waarvan de aanmaak bij ziekte, stress, zware inspanning, groei of een zeer eenzijdig dieet tekort kan schieten.",
+  { stofwissel:"Vullen de essentiële aminozuren aan in situaties met een verhoogde behoefte.",
+    immuun:"Worden in extra hoeveelheden gebruikt bij ziekte en wondgenezing." },
+  "Zitten in je totale eiwitinname; een gevarieerd eetpatroon is meestal genoeg.",
+  ["Vlees, vis, eieren, zuivel","Soja, noten, peulvruchten","Gelatine en botten (glycine, proline)"],
+  "Alleen bij ziekte, trauma of ernstig eenzijdige voeding.",
+  "Losse supplementen geven bij gezonden geen bewezen voordeel.",
+  "Zie de aparte pagina’s voor arginine, cysteïne, glutamine, glycine, proline, tyrosine en taurine."),
+
+X("x_arg","x_ca","Arg","Arginine","Voorwaardelijk essentieel aminozuur",
+  "Grondstof voor stikstofmonoxide (NO), dat bloedvaten ontspant, en voor de ureumcyclus; belangrijk bij wondgenezing en afweer.",
+  { hart:"Is de grondstof voor stikstofmonoxide, een stof die bloedvaten laat verwijden.",
+    immuun:"Wordt extra verbruikt bij wondgenezing en infecties.",
+    spieren:"Is een bouwsteen van spiereiwit." },
+  "Valt binnen je totale eiwitinname.",
+  ["Noten (walnoten, pinda’s), zaden","Vlees, vis, zuivel","Soja, peulvruchten, havermout"],
+  "Zeldzaam; kan bij zware verbranding, trauma of ziekte te laag zijn.",
+  "Hoge doses geven maagklachten en een lage bloeddruk.",
+  "Gebruik je bloeddrukverlagers, nitraten of middelen tegen erectiestoornissen, of heb je een hartaandoening? Overleg eerst met je arts voor je arginine slikt.",
+  { fam:"ei" }),
+
+X("x_cys","x_ca","Cys","Cysteïne","Zwavelhoudend aminozuur",
+  "Grondstof voor glutathion en keratine. Het lichaam maakt het uit methionine, maar niet altijd voldoende.",
+  { oxidatie:"Is de beperkende bouwsteen van glutathion, een belangrijke antioxidant.",
+    haar:"Keratine in haar en nagels is rijk aan cysteïne.",
+    huid:"Draagt bij aan de opbouw van keratine in de opperhuid." },
+  "Methionine plus cysteïne samen ongeveer 19 mg per kg lichaamsgewicht per dag (EFSA).",
+  ["Kip, kalkoen, eieren, zuivel","Broccoli, ui, knoflook","Haver, volkoren, peulvruchten"],
+  "Zeldzaam; vaker laag bij ziekte en ouderdom.",
+  "Hoge doses (NAC) geven misselijkheid en maag-darmklachten.",
+  "N-acetylcysteïne (NAC) is een geneesmiddel/supplement met eigen indicaties; gebruik het niet zonder overleg.",
+  { fam:"ei" }),
+
+X("x_gln","x_ca","Gln","Glutamine","Voorwaardelijk essentieel aminozuur",
+  "Het meest voorkomende aminozuur in bloed en spier. Brandstof voor darmcellen en afweercellen.",
+  { spijsvertering:"Is een belangrijke brandstof voor de cellen van de darmwand.",
+    immuun:"Is brandstof voor afweercellen, vooral bij ziekte of zware inspanning.",
+    spieren:"Wordt in de spier opgeslagen en bij stress vrijgegeven." },
+  "Valt binnen je totale eiwitinname.",
+  ["Vlees, vis, eieren, zuivel","Kool, spinazie, peterselie","Tofu, bonen, granen"],
+  "Kan bij ernstige ziekte, brandwonden of overtraining te laag worden.",
+  "Hoge doses geven maag-darmklachten; bij leverziekte schadelijk.",
+  "Bij gezonde mensen is extra glutamine niet bewezen nuttig. Heb je een lever- of nieraandoening, vraag dan eerst je arts.",
+  { fam:"ei" }),
+
+X("x_gly","x_ca","Gly","Glycine","Voorwaardelijk essentieel aminozuur",
+  "Het kleinste aminozuur en ongeveer een derde van alle aminozuren in collageen. Ook remmende boodschapperstof in de hersenen en bouwsteen van creatine en heem.",
+  { huid:"Is een hoofdbestanddeel van collageen in huid en bindweefsel.",
+    botten:"Is een hoofdbestanddeel van collageen in botten, pezen en kraakbeen.",
+    zenuw:"Werkt als remmende boodschapperstof in ruggenmerg en hersenstam." },
+  "Valt binnen je totale eiwitinname.",
+  ["Gelatine, botten en bouillon","Vlees met vel en bindweefsel, vis met huid","Soja, peulvruchten, zaden"],
+  "Zeldzaam; kan bij hoge collageenbehoefte of weinig dierlijke eiwitten te laag zijn.",
+  "Geen problemen bij normale voeding.",
+  "Collageensupplementen leveren vooral glycine en proline; het bewijs voor huid- en gewrichtseffecten is beperkt.",
+  { fam:"ei" }),
+
+X("x_pro","x_ca","Pro","Proline","Voorwaardelijk essentieel aminozuur",
+  "Aminozuur met een ringvormige structuur dat collageen stevigheid geeft.",
+  { huid:"Is een belangrijke bouwsteen van collageen in huid en bindweefsel.",
+    botten:"Draagt bij aan collageen in botten en kraakbeen." },
+  "Valt binnen je totale eiwitinname.",
+  ["Gelatine, vlees, vis, eieren","Zuivel, soja","Peulvruchten, volkoren"],
+  "Zeldzaam bij gewone voeding.",
+  "Geen problemen bij normale voeding.",
+  "Losse supplementen zijn niet nodig.",
+  { fam:"ei" }),
+
+X("x_tyr","x_ca","Tyr","Tyrosine","Voorwaardelijk essentieel aminozuur",
+  "Wordt uit fenylalanine gemaakt. Grondstof voor dopamine, noradrenaline, adrenaline, schildklierhormonen en melanine.",
+  { schildklier:"Is de bouwsteen van schildklierhormonen (samen met jodium).",
+    hersenen:"Is de grondstof voor dopamine en noradrenaline.",
+    huid:"Is de grondstof voor melanine, het pigment van huid en haar.",
+    hormonen:"Is de grondstof voor adrenaline en noradrenaline." },
+  "Fenylalanine plus tyrosine samen ongeveer 41 mg per kg lichaamsgewicht per dag (EFSA).",
+  ["Kaas, kip, kalkoen, vis","Eieren, melk","Pinda’s, amandelen, avocado, banaan, zaden"],
+  "Bij PKU is tyrosine essentieel; anders zeldzaam.",
+  "Geen problemen bij normale voeding.",
+  "Heb je een overactieve schildklier of gebruik je schildklierhormoon of MAO-remmers, overleg dan voor je tyrosinesupplementen slikt.",
+  { fam:"ei" }),
+
+X("x_tau","x_ca","Tau","Taurine","Zwavelhoudend aminozuur (niet in eiwitten)",
+  "Komt vrij in cellen voor; vooral in hart, netvlies, hersenen en spieren. Wordt gebruikt voor galzouten. Het lichaam maakt het uit cysteïne.",
+  { ogen:"Zit in hoge concentratie in het netvlies.",
+    hart:"Is aanwezig in hoge concentraties in de hartspier.",
+    zenuw:"Speelt een rol als regelaar in zenuw- en spiercellen.",
+    spijsvertering:"Is nodig voor de vorming van galzouten voor vertering van vet." },
+  "Geen norm; tot ongeveer 3 g per dag uit voeding of dranken wordt als veilig beschouwd (EFSA).",
+  ["Schaal- en schelpdieren, vis","Vlees, vooral donker vlees","Energiedrank (toegevoegd), vrijwel afwezig in plantaardige voeding"],
+  "Veganisten hebben een lage inname, maar maken zelf voldoende; bij baby’s is het voorwaardelijk essentieel.",
+  "Hoge doses zijn niet bewezen schadelijk, maar ook niet nodig.",
+  "In energiedrankjes zit taurine samen met cafeïne; die combinatie is geen aanrader voor kinderen, zwangeren en mensen met hartklachten.",
+  { fam:"ei" }),
+
+X("x_na","x_ei","NA","Niet-essentiële aminozuren","Alanine, asparagine, asparaginezuur, glutaminezuur, serine",
+  "Vijf aminozuren die het lichaam altijd zelf in voldoende mate kan maken. Ze zijn wel gewoon nodig, maar je hoeft ze niet apart via voeding binnen te krijgen.",
+  { energie:"Worden in de stofwisseling omgezet tot glucose of energie.",
+    zenuw:"Glutaminezuur (glutamaat) is de belangrijkste stimulerende boodschapperstof in de hersenen." },
+  "Zitten in je totale eiwitinname.",
+  ["Alle eiwitrijke voeding","Glutamaat in kaas, tomaat, sojasaus (umami)","Asparaginezuur in sommige zoetstoffen (aspartaam)"],
+  "Geen tekort mogelijk bij voldoende totale eiwitinname.",
+  "Geen bekende problemen uit voeding; E621 (MSG) wordt door de meeste mensen goed verdragen.",
+  "Alanine = in de lever omgezet tot glucose; serine, asparagine en asparaginezuur zijn bouwstenen voor veel stoffen in het lichaam."),
+
+/* ===== Vetten ===== */
+X("x_chol","x_vet","Chl","Cholesterol","Dierlijk vetachtige stof",
+  "Bouwsteen van celmembranen en grondstof voor galzuren, steroïdhormonen en vitamine D. Het lichaam maakt het zelf, vooral in de lever.",
+  { hormonen:"Is de grondstof voor steroïdhormonen (zoals oestrogeen, testosteron, cortisol) en vitamine D.",
+    spijsvertering:"Is de grondstof voor galzuren, nodig voor de vertering van vet." },
+  "Geen vaste norm; de hoeveelheid verzadigd en transvet in je voeding beïnvloedt het bloedcholesterol meer dan cholesterol uit voeding.",
+  ["Eieren (dooier), orgaanvlees, schaaldieren","Vette vleeswaren, boter, kaas, room","Planten bevatten geen cholesterol"],
+  "Geen tekort mogelijk; het lichaam maakt het zelf.",
+  "Een hoog LDL-cholesterol in het bloed verhoogt het risico op hart- en vaatziekten; bij sommige mensen reageert het bloed sterker op cholesterol uit voeding.",
+  "Heb je een erfelijk verhoogd cholesterol of een hart- en vaatziekte, volg dan het advies van je arts of diëtist."),
+
+X("x_fl","x_vet","FL","Fosfolipiden","Lecithine",
+  "Vetten met een fosfaatgroep; hoofdbestanddeel van alle celmembranen. Lecithine is een mengsel van fosfolipiden en wordt ook als emulgator gebruikt (E322).",
+  { celdeling:"Vormen de bouwsteen van celmembranen, nodig voor elke celdeling.",
+    stofwissel:"Helpen vet te transporteren door de lever en het bloed." },
+  "Geen norm; het lichaam maakt zelf veel, mede uit choline.",
+  ["Eieren (dooier), lever, vlees","Soja- en zonnebloemlecithine","Vette vis, noten"],
+  "Zeldzaam.",
+  "Geen bekende problemen uit voeding.",
+  "Lecithine uit soja kan bij sojaallergie problemen geven."),
+
+X("x_mct","x_vv","MCT","Middellange-keten vetzuren (MCT)","Capron-, capryl-, caprine- en laurinezuur",
+  "Verzadigde vetzuren met 6 tot 12 koolstofatomen. Ze worden snel opgenomen en verbrand, zonder tussenstap via de lymfe.",
+  { energie:"Worden snel als energie verbrand, vooral door de lever." },
+  "Geen norm; telt mee als verzadigd vet (maximaal 10% van je energie).",
+  ["Kokosolie en palmpitolie","MCT-olie (supplement)","Volle zuivel in kleine hoeveelheid"],
+  "Geen tekort mogelijk.",
+  "Veel tegelijk geeft maag-darmklachten en diarree; het blijft verzadigd vet.",
+  "Het idee dat MCT-olie bij het afvallen helpt is niet goed bewezen. Gebruik het zuinig."),
+
+X("x_scfa","x_vv","KK","Korte-keten vetzuren","Boterzuur, propionzuur, azijnzuur",
+  "Vetzuren met minder dan 6 koolstofatomen. Ze ontstaan vooral in de dikke darm wanneer darmbacteriën vezels fermenteren.",
+  { spijsvertering:"Boterzuur is de belangrijkste brandstof voor de cellen van de dikke darm.",
+    energie:"Leveren een deel van de energie uit vezels." },
+  "Geen norm; ze worden zelf in de darm gemaakt uit vezels.",
+  ["Vezelrijke voeding (peulvruchten, volkoren, groente)","Boter en volle zuivel (kleine hoeveelheden boterzuur)","Gefermenteerd voedsel (azijnzuur)"],
+  "Een lage vezelinname geeft minder korte-keten vetzuren.",
+  "Geen problemen bij normale voeding.",
+  "De beste manier om meer korte-keten vetzuren te krijgen is meer vezels eten, niet boter."),
+
+X("x_ol","x_eo","ω9","Oliezuur (omega-9)","Het belangrijkste enkelvoudig onverzadigde vetzuur",
+  "Het meest voorkomende vetzuur in olijfolie en veel noten. Het lichaam kan het zelf maken, dus het is niet essentieel.",
+  { hart:"Vervangen van verzadigd vet door oliezuur draagt bij aan het behoud van een normaal bloedcholesterol." },
+  "Geen eigen norm; deel van je totale vetinname.",
+  ["Olijfolie, koolzaadolie","Amandelen, hazelnoten, cashewnoten, pecannoten","Avocado"],
+  "Geen tekort mogelijk.",
+  "Energierijk: te veel levert overtollige calorieën.",
+  "Het gezonde effect komt vooral door vervanging van verzadigd vet, niet doordat je extra moet nemen."),
+
+X("x_gla","x_o6","GLA","Gammalinoleenzuur (GLA)","Omega-6 uit teunisbloem- en borageolie",
+  "Omega-6-vetzuur dat het lichaam uit linolzuur maakt. Is een voorloper van ontstekingsregulerende stoffen.",
+  { huid:"Wordt gebruikt bij huidklachten (zoals eczeem), maar het bewijs hiervoor is wisselend." },
+  "Geen norm; het lichaam maakt zelf uit linolzuur.",
+  ["Teunisbloemolie, borageolie","Zwarte-bessenzaadolie","Hennepzaad en hennepolie"],
+  "Geen tekort mogelijk bij voldoende linolzuur.",
+  "Hoge doses kunnen maag-darmklachten geven.",
+  "Gebruik je bloedverdunners of epilepsiemedicijnen, overleg dan met je arts; GLA-supplementen kunnen de werking beïnvloeden.",
+  { }),
+
+X("x_ara","x_o6","ARA","Arachidonzuur (AA)","Omega-6 uit dierlijke voeding",
+  "Lang omega-6-vetzuur dat in celmembranen zit en de grondstof is voor ontstekings- en signaalstoffen (eicosanoïden). Wordt gemaakt uit linolzuur.",
+  { hersenen:"Is een bestanddeel van de celmembranen van de hersenen.",
+    immuun:"Is de grondstof voor signaalstoffen bij ontsteking en afweer." },
+  "Geen norm voor volwassenen; bij baby’s zit het in moedermelk en flesvoeding.",
+  ["Vlees, gevogelte, eieren","Vis (kleine hoeveelheid)","Zuivel (kleine hoeveelheid)"],
+  "Geen tekort mogelijk bij gewone voeding; bij baby’s is het voorwaardelijk essentieel.",
+  "Normale innames zijn onschadelijk.",
+  "Het idee dat omega-6 altijd ontsteking bevordert is te simpel; belangrijk is de totale voeding.",
+  { }),
+
+/* ===== Vitamines: vormen ===== */
+X("A_ret","A","Ret","Retinol (voorgevormd vitamine A)","Uit dierlijke voeding",
+  "De actieve vorm van vitamine A, direct bruikbaar door het lichaam. Zit in lever, eieren en zuivel.",
+  { ogen:"Is nodig voor het netvlies en voor zien in het donker.",
+    immuun:"Draagt bij aan de werking van het afweersysteem.",
+    huid:"Draagt bij aan behoud van normale huid en slijmvliezen." },
+  "Gezamenlijk 800 µg RAE (retinolequivalent) per dag als etiketwaarde.",
+  ["Lever en leverproducten (zeer veel)","Eieren, volle zuivel, boter","Vette vis, levertraan"],
+  "Nachtblindheid, droge ogen en huid.",
+  "Hoge innames (meer dan 3000 µg per dag) zijn schadelijk: hoofdpijn, leverschade en bij zwangerschap geboorteafwijkingen.",
+  "Zwangeren moeten lever en leverproducten vermijden en geen vitamine A-supplementen slikken tenzij een arts dat adviseert.",
+  { nrv:"800 µg RAE" }),
+
+X("A_bc","A","βC","Provitamine A (bètacaroteen)","Uit plantaardige voeding",
+  "Oranje-gele plantenkleurstoffen die het lichaam omzet in vitamine A naar behoefte. Zo kan je er niet teveel van krijgen uit voeding.",
+  { ogen:"Wordt omgezet in vitamine A, nodig voor het netvlies.",
+    oxidatie:"Werkt als antioxidant." },
+  "Ongeveer 12 µg bètacaroteen telt als 1 µg retinol (RAE).",
+  ["Wortel, zoete aardappel, pompoen","Spinazie, boerenkool, mango","Abrikozen, meloen"],
+  "Zelden; wel te laag bij weinig groente en fruit.",
+  "Veel wortel geeft een oranje huid (carotenemie), wat onschadelijk is.",
+  "Hoge doses bètacaroteen-supplementen verhogen bij rokers het risico op longkanker; neem ze dan niet.",
+  { nrv:"Zie vitamine A" }),
+
+X("D2","D","D2","Vitamine D2","Ergocalciferol (plantaardig)",
+  "Vorm van vitamine D uit schimmels en gisten, vaak in supplementen voor veganisten. Wordt in het lichaam omgezet in dezelfde actieve stof.",
+  { botten:"Draagt bij aan behoud van normale botten en tanden en opname van calcium.",
+    spieren:"Draagt bij aan een normale spierfunctie.",
+    immuun:"Draagt bij aan de normale werking van het immuunsysteem." },
+  "Zelfde richtwaarde als vitamine D (10 µg per dag voor risicogroepen en 20 µg vanaf 70 jaar volgens het Voedingscentrum).",
+  ["Champignons blootgesteld aan UV-licht","Verrijkte plantaardige dranken","Gist, sommige supplementen"],
+  "Zie vitamine D.",
+  "Zie vitamine D; maximaal 100 µg per dag voor volwassenen (EFSA).",
+  "D2 verhoogt het bloedgehalte iets minder goed en minder lang dan D3."),
+
+X("D3","D","D3","Vitamine D3","Cholecalciferol (dierlijk en uit de huid)",
+  "De vorm die onze huid zelf maakt onder invloed van zonlicht, en die in vette vis en eieren zit. Meestal de vorm in supplementen.",
+  { botten:"Draagt bij aan behoud van normale botten en tanden en opname van calcium.",
+    spieren:"Draagt bij aan een normale spierfunctie.",
+    immuun:"Draagt bij aan de normale werking van het immuunsysteem." },
+  "10 µg per dag voor risicogroepen, 20 µg vanaf 70 jaar (Voedingscentrum).",
+  ["Zon op de huid (zomer)","Vette vis, eieren, levertraan","Supplementen (ook plantaardige D3 uit korstmos)"],
+  "Zie vitamine D.",
+  "Zie vitamine D; maximaal 100 µg per dag voor volwassenen (EFSA).",
+  "Neem D3 bij een maaltijd met vet voor betere opname."),
+
+X("K1","K","K1","Vitamine K1","Fylloquinon (planten)",
+  "De vorm uit groene bladgroenten. Belangrijkste bron van vitamine K in de voeding en nodig voor de bloedstolling.",
+  { stolling:"Draagt bij aan een normale bloedstolling.",
+    botten:"Draagt bij aan het behoud van normale botten." },
+  "75 µg per dag als referentiewaarde.",
+  ["Spinazie, boerenkool, broccoli, sla","Groene kruiden (peterselie)","Plantaardige oliën (soja, koolzaad)"],
+  "Zie vitamine K.",
+  "Zie vitamine K.",
+  "Gebruik je coumarines? Eet dan elke dag ongeveer evenveel groente; overleg met de trombosedienst.",
+  { nrv:"75 µg" }),
+
+X("K2","K","K2","Vitamine K2","Menaquinon (MK-4, MK-7)",
+  "Vorm uit dierlijke en gefermenteerde voeding, ook door darmbacteriën gemaakt. MK-7 uit natto blijft langer actief in het bloed.",
+  { stolling:"Draagt bij aan een normale bloedstolling.",
+    botten:"Draagt bij aan het behoud van normale botten." },
+  "Valt onder de totale vitamine K-inname (75 µg per dag).",
+  ["Natto (gefermenteerde soja)","Kaas, boter, eieren","Vlees, lever"],
+  "Zie vitamine K.",
+  "Zie vitamine K.",
+  "K2-supplementen zijn niet nodig bij gevarieerde voeding. Gebruik je bloedverdunners, overleg met je arts.",
+  { nrv:"75 µg" }),
+
+X("B9a","B9","Fz","Foliumzuur","Synthetische vorm van vitamine B9",
+  "De stabiele vorm uit supplementen en verrijkte producten. Wordt in het lichaam omgezet in de actieve vorm.",
+  { celdeling:"Draagt bij aan de groei van moederlijk weefsel tijdens de zwangerschap.",
+    bloed:"Draagt bij aan een normale aanmaak van bloedcellen." },
+  "Vrouwen die zwanger willen worden: 400 µg per dag, vanaf 4 weken vóór de bevruchting tot 8 weken na (Gezondheidsraad).",
+  ["Foliumzuursupplementen en multivitamines","Verrijkte graanproducten (in sommige landen)","Zwangerschapsvitamines"],
+  "Bloedarmoede, neuraalbuisdefecten bij de baby.",
+  "Meer dan 1000 µg per dag uit supplementen kan een B12-tekort maskeren.",
+  "Foliumzuur is voor zwangerschapswens beter onderzocht dan natuurlijk foliaat. Laat B12 meten als je veel foliumzuur slikt."),
+
+X("B9b","B9","Fo","Foliaat","Natuurlijke vorm van vitamine B9",
+  "De vorm uit voeding (zoals 5-methyltetrahydrofolaat). Kwetsbaar voor licht, lucht en hitte, dus verlies bij koken.",
+  { celdeling:"Draagt bij aan een normale celdeling.",
+    bloed:"Draagt bij aan een normale aanmaak van bloedcellen.",
+    homocys:"Draagt bij aan een normale homocysteïnestofwisseling." },
+  "200 µg DFE (foliaatequivalent) per dag als etiketwaarde.",
+  ["Groene bladgroenten, broccoli, spruitjes","Peulvruchten, sinaasappel","Volkoren, lever"],
+  "Bloedarmoede, vermoeidheid, aften.",
+  "Uit voeding geen problemen.",
+  "Methylfolaat-supplementen worden aangeboden als alternatief voor foliumzuur; bij gezonde mensen is er geen bewezen voordeel.",
+  { nrv:"200 µg DFE" }),
+
+/* ===== Mineralen ===== */
+X("m_S","","S","Zwavel","Onderdeel van methionine en cysteïne",
+  "Zit in twee aminozuren en daarmee in eiwitten, keratine, enzymen en glutathion. Je krijgt het binnen via eiwit; er is geen aparte norm.",
+  { haar:"Is een bestanddeel van keratine in haar en nagels.",
+    huid:"Is een bestanddeel van keratine in de huid.",
+    oxidatie:"Zit in glutathion, een belangrijke antioxidant.",
+    botten:"Zit in kraakbeen en bindweefsel." },
+  "Geen NRV; voldoende eiwit levert genoeg zwavel.",
+  ["Eiwitrijke voeding (vlees, vis, eieren, zuivel)","Ui, knoflook, prei, kool, broccoli","Peulvruchten, noten"],
+  "Praktisch niet voor bij voldoende eiwit.",
+  "Hoge innames via drinkwater met veel sulfaat kunnen diarree geven.",
+  "MSM- en zwavelsupplementen hebben geen bewezen nut voor gewrichten of huid. Sulfieten in wijn en gedroogd fruit kunnen bij gevoelige mensen klachten geven.",
+  { groep:"macro", type:"min", fam:"mmin", nrv:"Geen NRV" }),
+
+X("m_Co","","Co","Kobalt","Onderdeel van vitamine B12",
+  "Het centrale atoom van vitamine B12 (cobalamine). Mensen hebben alleen kobalt in de vorm van B12 nodig.",
+  { bloed:"Is als onderdeel van vitamine B12 nodig voor de aanmaak van rode bloedcellen.",
+    zenuw:"Is als onderdeel van vitamine B12 nodig voor het zenuwstelsel." },
+  "Geen eigen norm; dek de behoefte door voldoende B12.",
+  ["Dezelfde bronnen als vitamine B12","Vis, vlees, eieren, zuivel","Verrijkte producten"],
+  "Een tekort aan kobalt zelf bestaat niet bij mensen; wel een B12-tekort.",
+  "Hoge doses kobaltzouten zijn giftig voor hart, schildklier en zenuwen.",
+  "Gebruik geen kobaltsupplementen; neem zo nodig vitamine B12.",
+  { groep:"ultra", type:"min", fam:"ultra", nrv:"Geen NRV" }),
+
+X("m_B","","B","Boor","Mogelijk essentieel sporenelement",
+  "Komt voor in planten en speelt waarschijnlijk een rol bij botten en bij de stofwisseling van calcium, magnesium en vitamine D. Of mensen het echt nodig hebben is niet bewezen.",
+  { botten:"Wordt onderzocht voor een rol bij botopbouw en de calciumstofwisseling; er is geen toegestane gezondheidsclaim." },
+  "Geen NRV; de bovengrens voor volwassenen is 10 mg per dag (EFSA).",
+  ["Pruimen, rozijnen, abrikozen, avocado","Noten, peulvruchten","Wijn, koffie"],
+  "Geen bevestigde tekortverschijnselen bij mensen.",
+  "Meer dan 10 mg per dag kan misselijkheid en huidirritatie geven.",
+  "Boorzuur uit schoonmaakmiddelen en medicijnen is giftig; neem geen boorzuur in.",
+  { groep:"ultra", type:"min", fam:"ultra", nrv:"Geen NRV" }),
+
+X("m_Si","","Si","Silicium","Mogelijk essentieel sporenelement",
+  "Zit in bindweefsel, bot, huid en haar. De rol bij de mens is nog niet goed vastgesteld.",
+  { botten:"Wordt onderzocht voor een rol bij botopbouw en bindweefsel.",
+    huid:"Is aanwezig in bindweefsel van de huid; er is geen toegestane gezondheidsclaim.",
+    haar:"Is aanwezig in haar en nagels; effect van supplementen op haargroei is onvoldoende aangetoond." },
+  "Geen NRV; gemiddelde inname is ongeveer 20 tot 50 mg per dag.",
+  ["Havermout, volkoren granen, bier","Banaan, groene bonen","Mineraalwater (orthosiliciumzuur)"],
+  "Geen bevestigde tekortverschijnselen bij mensen.",
+  "Uit voeding geen problemen.",
+  "Siliciumsupplementen voor huid, haar en nagels zijn niet goed bewezen; kies zo nodig gewoon een gevarieerd dieet.",
+  { groep:"ultra", type:"min", fam:"ultra", nrv:"Geen NRV" }),
+
+X("m_Ni","","Ni","Nikkel","Ultra-sporenelement (rol bij mensen onbekend)",
+  "In planten en bacteriën is nikkel nodig voor enzymen. Een functie bij de mens is niet vastgesteld.",
+  {},
+  "Geen NRV.",
+  ["Noten, cacao, chocolade","Peulvruchten, haver, volkoren","Thee, sommige groenten"],
+  "Geen bevestigd tekort bij mensen.",
+  "Nikkel is een veelvoorkomend contactallergeen; voeding kan bij een allergie klachten geven.",
+  "Heb je een nikkelallergie, overleg met je arts of een diëtist voordat je voeding beperkt.",
+  { groep:"ultra", type:"min", fam:"ultra", nrv:"Geen NRV", nogoal:"Geen bevestigde functie bij de mens." }),
+
+X("m_V","","V","Vanadium","Ultra-sporenelement (rol bij mensen onbekend)",
+  "Komt in zeer kleine hoeveelheden in voeding voor. Het is onderzocht vanwege een mogelijk effect op de suikerstofwisseling, maar nut voor mensen is niet aangetoond.",
+  {},
+  "Geen NRV.",
+  ["Paddenstoelen, schaaldieren","Zwarte peper, dille","Granen, bier, wijn"],
+  "Geen bevestigd tekort bij mensen.",
+  "Hoge doses (supplementen) kunnen maag-darmklachten geven en zijn mogelijk schadelijk voor nieren.",
+  "Gebruik geen vanadiumsupplementen voor je bloedsuiker; het bewijs ontbreekt.",
+  { groep:"ultra", type:"min", fam:"ultra", nrv:"Geen NRV", nogoal:"Geen bevestigde functie bij de mens." }),
+
+X("m_Li","","Li","Lithium","Ultra-sporenelement (rol bij mensen onbekend)",
+  "Zeer kleine hoeveelheden komen voor in drinkwater en voeding. In hoge, voorgeschreven doses is lithium een geneesmiddel bij bepaalde stemmingsstoornissen.",
+  {},
+  "Geen NRV.",
+  ["Drinkwater (verschilt per streek)","Granen, groenten","Sommige mineraalwaters"],
+  "Geen bevestigd tekort bij mensen.",
+  "Geneesmiddel-doses zijn alleen veilig onder medisch toezicht; overdosering is gevaarlijk.",
+  "Neem geen lithiumsupplementen op eigen initiatief; gebruik je lithium als medicijn, volg dan de controles van je arts.",
+  { groep:"ultra", type:"min", fam:"ultra", nrv:"Geen NRV", nogoal:"Geen bevestigde functie bij de mens in voedingsdoses." }),
+
+/* ===== Vitamine-achtige stoffen ===== */
+X("v_q10","","Q10","Co-enzym Q10","Ubiquinon / ubiquinol",
+  "Wordt in elke cel gemaakt en zit in de mitochondriën, waar het helpt bij de aanmaak van energie. Werkt ook als antioxidant.",
+  { energie:"Is een onderdeel van de energieproductie in de mitochondriën.",
+    oxidatie:"Beschermt celmembranen en vetten tegen oxidatieve schade.",
+    hart:"Komt in hoge concentraties voor in de hartspier." },
+  "Geen norm; gewone voeding levert 3 tot 6 mg per dag.",
+  ["Orgaanvlees, vette vis, vlees","Noten, zaden, plantaardige olie","Broccoli, bloemkool"],
+  "Alleen zeldzaam bij aangeboren stofwisselingsziekten.",
+  "Goed verdragen; soms maagklachten of slapeloosheid bij hoge doses.",
+  "Gebruik je cholesterolverlagers (statines) of bloedverdunners, overleg dan met je arts. Q10 kan de werking van warfarine verminderen.",
+  { groep:"vlike", type:"oth", fam:"vlike", nrv:"Geen NRV" }),
+
+X("v_car","","Car","L-carnitine","Vetzuurtransporteur",
+  "Brengt vetzuren in de mitochondriën zodat ze verbrand kunnen worden. Wordt gemaakt uit lysine en methionine, met hulp van vitamine C, B6 en ijzer.",
+  { energie:"Is nodig voor de verbranding van vetten tot energie.",
+    spieren:"Zit in hoge concentraties in spieren en de hartspier.",
+    hart:"De hartspier haalt veel energie uit de verbranding van vetzuren." },
+  "Geen norm; het lichaam maakt genoeg bij gewone voeding.",
+  ["Rood vlees, vooral lam en rund","Vis, gevogelte, zuivel","Plantaardig: heel weinig (avocado, tempeh)"],
+  "Zeldzaam; bij aangeboren tekort of nierdialyse.",
+  "Hoge doses geven misselijkheid, diarree en een visgeur.",
+  "Er zijn aanwijzingen dat veel carnitine de bacteriële productie van TMAO verhoogt, wat in verband gebracht wordt met hart- en vaatziekten; supplementen zijn niet aangeraden zonder reden.",
+  { groep:"vlike", type:"oth", fam:"vlike", nrv:"Geen NRV" }),
+
+X("v_ino","","Ino","Inositol","Myo-inositol (vroeger ‘vitamine B8’)",
+  "Suikeralcohol in celmembranen, betrokken bij signaaloverdracht binnen cellen. Het lichaam maakt het zelf uit glucose.",
+  { hormonen:"Wordt onderzocht bij PCOS en insulinegevoeligheid; het bewijs is nog beperkt.",
+    zenuw:"Is betrokken bij signaaloverdracht in zenuwcellen." },
+  "Geen norm; voeding levert enkele honderden mg tot 1 g per dag.",
+  ["Fruit (cantaloupe, citrus), bonen","Volkoren granen, noten","Zemelen"],
+  "Geen tekort mogelijk bij gezonde mensen.",
+  "Hoge doses geven maag-darmklachten.",
+  "Gebruik inositol bij PCOS of vruchtbaarheidsklachten alleen in overleg met je arts.",
+  { groep:"vlike", type:"oth", fam:"vlike", nrv:"Geen NRV" }),
+
+X("v_lip","","Lip","Liponzuur","Alfa-liponzuur",
+  "Zit in enzymen van de energiestofwisseling en werkt als antioxidant. Wordt zelf gemaakt in kleine hoeveelheden.",
+  { energie:"Is een co-enzym in de energiestofwisseling van koolhydraten.",
+    oxidatie:"Werkt als antioxidant, ook voor vitamine C en E." },
+  "Geen norm.",
+  ["Orgaanvlees, vlees","Spinazie, broccoli, tomaat","Aardappel, erwten"],
+  "Geen tekort mogelijk bij gezonde mensen.",
+  "Hoge doses kunnen maagklachten, huiduitslag en een te lage bloedsuiker geven.",
+  "Gebruik je diabetesmedicijnen of insuline, overleg dan voor je liponzuur slikt: het kan je bloedsuiker verlagen.",
+  { groep:"vlike", type:"oth", fam:"vlike", nrv:"Geen NRV" }),
+
+/* ===== Plantaardige stoffen (fytonutriënten) ===== */
+X("f_pf","","Pf","Polyfenolen","Plantaardige antioxidanten",
+  "Een grote groep plantenstoffen (duizenden) met een antioxiderende werking. Ze geven kleur en smaak aan thee, koffie, cacao, bessen, groente en olijfolie.",
+  { oxidatie:"Hebben in het laboratorium een antioxiderend effect; het nut voor de mens hangt af van de soort.",
+    hart:"Cacaoflavanolen (200 mg per dag) dragen bij aan een normale elasticiteit van bloedvaten; hydroxytyrosol uit olijfolie (5 mg per 20 g) beschermt LDL tegen oxidatie." },
+  "Geen norm; een gevarieerd dieet met veel groente, fruit, thee en noten levert genoeg.",
+  ["Thee, koffie, cacao en pure chocolade","Bessen, appel, druiven, uien","Olijfolie, noten, kruiden"],
+  "Geen tekort vastgesteld; een eenzijdig dieet levert er weinig.",
+  "Zeer hoge doses uit supplementen (zoals groene-theeextract met veel EGCG) kunnen de lever beschadigen.",
+  "Een groot deel van de polyfenolen wordt door darmbacteriën omgezet; de opname verschilt per persoon.",
+  { groep:"fyto", type:"oth", fam:"fyto", nrv:"Geen NRV" }),
+
+X("f_fl","f_pf","Fl","Flavonoïden","Catechines, quercetine, anthocyanen, isoflavonen",
+  "De grootste groep polyfenolen. Anthocyanen kleuren bessen blauw en rood, catechines zitten in thee en cacao, quercetine in ui en appel, isoflavonen in soja.",
+  { oxidatie:"Fangen vrije radicalen af en werken samen met vitamine C.",
+    hart:"Cacaoflavanolen dragen bij aan een normale elasticiteit van bloedvaten (bij 200 mg per dag)." },
+  "Geen norm.",
+  ["Thee, cacao, appels, bessen","Ui, citrusvruchten, rode kool","Soja en sojaproducten (isoflavonen)"],
+  "Geen tekort vastgesteld.",
+  "Isoflavonen-supplementen zijn niet aangeraden bij hormoongevoelige aandoeningen.",
+  "Kies voor groente en fruit in plaats van extracten.",
+  { }),
+
+X("f_resv","f_pf","Rv","Resveratrol","Stilbeen uit druiven en pinda’s",
+  "Polyfenol in de schil van rode druiven, pinda’s en bessen. In dierproeven en op celniveau actief, maar bewijs voor effect op mensen is beperkt.",
+  { oxidatie:"Heeft een antioxiderende werking in celproeven." },
+  "Geen norm.",
+  ["Rode druiven (schil), rode wijn","Pinda’s, bessen","Pure chocolade"],
+  "Geen tekort vastgesteld.",
+  "Hoge doses geven maag-darmklachten.",
+  "Het effect van rode wijn op de gezondheid komt niet door resveratrol; alcohol is schadelijk. Gebruik dit niet als reden om te drinken.",
+  { }),
+
+X("f_cur","f_pf","Cur","Curcumine","Kleurstof uit kurkuma",
+  "Geel polyfenol uit kurkuma (geelwortel). Wordt slecht opgenomen, vooral zonder zwarte peper en vet.",
+  { oxidatie:"Heeft een antioxiderende werking in celproeven." },
+  "Geen norm; als additief (E100) geldt een ADI van 3 mg per kg lichaamsgewicht (EFSA).",
+  ["Kurkuma, kerrie","Mosterd (gekleurd)","Supplementen"],
+  "Geen tekort vastgesteld.",
+  "Bij supplementen zijn leverbeschadigingen gemeld, vooral bij extracten met zwarte-peperextract.",
+  "Gebruik je bloedverdunners of heb je galstenen of leverproblemen, vraag dan eerst je arts.",
+  { }),
+
+X("f_car","","Cn","Carotenoïden","Oranje, rode en gele plantenkleurstoffen",
+  "Meer dan 600 kleurstoffen, waarvan een deel (bètacaroteen) wordt omgezet in vitamine A. Ze zijn vetoplosbaar, dus ze worden beter opgenomen met wat vet.",
+  { oxidatie:"Werken als antioxidanten in vetrijke delen van de cel.",
+    ogen:"Luteïne en zeaxanthine bouwen de gele vlek (macula) in het netvlies op." },
+  "Geen norm; ongeveer 5 porties groente en fruit per dag levert genoeg.",
+  ["Wortel, pompoen, tomaat, paprika","Spinazie, boerenkool, broccoli","Abrikoos, mango, meloen"],
+  "Geen tekort vastgesteld.",
+  "Hoge doses geven een oranje huidskleur (carotenemie), wat onschadelijk is.",
+  "Hoge bètacaroteen-supplementen verhogen bij rokers het risico op longkanker.",
+  { groep:"fyto", type:"oth", fam:"fyto", nrv:"Geen NRV" }),
+
+X("f_lut","f_car","Lu","Luteïne en zeaxanthine","Macula-pigmenten",
+  "De twee carotenoïden die in de gele vlek van het netvlies zitten. Filteren blauw licht en beschermen tegen oxidatieve schade.",
+  { ogen:"Zijn de pigmenten van de gele vlek; er is geen toegestane EU-claim, maar onderzoek wijst op bescherming van het zicht." },
+  "Geen norm; ongeveer 6 mg per dag uit voeding wordt in onderzoek genoemd.",
+  ["Spinazie, boerenkool, groene groenten","Eidooier, maïs, paprika","Pistachenoten, broccoli, doperwten"],
+  "Geen tekort vastgesteld.",
+  "Geen bekende problemen uit voeding.",
+  "Vet in de maaltijd verhoogt de opname. Bij oogaandoeningen: volg het advies van je oogarts.",
+  { }),
+
+X("f_lyc","f_car","Ly","Lycopeen","Rode kleurstof uit tomaat",
+  "Rood carotenoïde in tomaat, watermeloen en roze grapefruit. Wordt beter opgenomen uit verhitte tomaat met olie dan uit rauwe tomaat.",
+  { oxidatie:"Heeft een sterke antioxiderende werking in celproeven." },
+  "Geen norm.",
+  ["Tomaat (vooral gekookt: saus, puree)","Watermeloen, roze grapefruit","Guave"],
+  "Geen tekort vastgesteld.",
+  "Zeer veel tomaat kan de huid oranje-rood kleuren; dit is onschadelijk.",
+  "Bewijs dat lycopeen kanker voorkomt is onvoldoende; eet vooral gevarieerd.",
+  { }),
+
+X("f_gls","","Gs","Glucosinolaten","Mosterdolieglycosiden uit koolsoorten",
+  "Zwavelhoudende stoffen in broccoli, spruitjes, kool, radijs en mosterd. Bij kauwen of snijden worden ze omgezet in isothiocyanaten (zoals sulforafaan).",
+  { oxidatie:"Isothiocyanaten stimuleren enzymen die lichaamsvreemde stoffen afbreken." },
+  "Geen norm; kruisbloemigen enkele keren per week.",
+  ["Broccoli, bloemkool, spruitjes, boerenkool","Rode kool, witte kool, koolrabi","Radijs, mierikswortel, mosterd"],
+  "Geen tekort vastgesteld.",
+  "Zeer grote hoeveelheden rauwe kool kunnen bij jodiumtekort de schildklier remmen.",
+  "Koken verlaagt het gehalte; stomen of kort roerbakken behoudt meer. Heb je een schildklieraandoening, overleg dan over grote hoeveelheden rauwe kool.",
+  { groep:"fyto", type:"oth", fam:"fyto", nrv:"Geen NRV" }),
+
+X("f_all","","Aly","Allylzwavelverbindingen","Allicine uit knoflook en ui",
+  "Zwavelhoudende stoffen in knoflook, ui, prei en bieslook. Allicine ontstaat bij het fijnmaken van knoflook en geeft de typische geur.",
+  { hart:"Onderzoek laat een bescheiden effect op bloeddruk en cholesterol zien; er is geen toegestane EU-claim." },
+  "Geen norm.",
+  ["Knoflook (rauw of fijngehakt)","Ui, sjalot, prei","Bieslook, bosui"],
+  "Geen tekort vastgesteld.",
+  "Veel rauwe knoflook geeft maagklachten, een scherpe adem en kan bloedingen bevorderen.",
+  "Gebruik je bloedverdunners of moet je geopereerd worden, vraag dan of je knoflooksupplementen moet stoppen.",
+  { groep:"fyto", type:"oth", fam:"fyto", nrv:"Geen NRV" }),
+
+X("f_ps","","Ps","Plantensterolen en -stanolen","Fytosterolen",
+  "Plantaardige stoffen die op cholesterol lijken en in de darm met cholesterol concurreren om opname. Daardoor daalt het LDL-cholesterol.",
+  { hart:"Verlagen het LDL-cholesterol met ongeveer 7 tot 12% bij 1,5 tot 3 g per dag." },
+  "Ongeveer 2 g per dag voor een cholesterolverlagend effect; meer dan 3 g per dag heeft geen extra effect (EFSA).",
+  ["Margarines en yoghurtdrankjes met plantensterolen","Noten, zaden, plantaardige oliën","Volkoren granen, peulvruchten"],
+  "Geen tekort vastgesteld.",
+  "Te veel kan de opname van bètacaroteen en andere vetoplosbare stoffen iets verminderen.",
+  "Alleen zinvol bij een verhoogd cholesterol. Niet bedoeld voor kinderen onder 5 jaar, zwangeren en borstvoeding, en niet bij de zeldzame ziekte sitosterolemie.",
+  { groep:"fyto", type:"oth", fam:"fyto", nrv:"Geen NRV" }),
+
+/* ===== Darmgezondheid ===== */
+X("d_pre","","Pre","Prebiotica","Voedsel voor goede darmbacteriën",
+  "Niet-verteerbare stoffen (zoals inuline, FOS en GOS) die selectief de groei van nuttige darmbacteriën, zoals bifidobacteriën, bevorderen.",
+  { spijsvertering:"Inuline uit cichorei draagt bij aan een normale darmfunctie door een hogere ontlastingsfrequentie (bij 12 g per dag).",
+    stofwissel:"Worden gefermenteerd tot korte-keten vetzuren." },
+  "Geen norm; vezelrijke voeding levert al prebiotica.",
+  ["Cichorei, Jeruzalemartisjok, prei, ui, knoflook","Asperges, banaan, havermout","Peulvruchten, volkoren"],
+  "Geen tekort mogelijk; een lage vezelinname geeft een armere darmflora.",
+  "Te snel veel geeft winderigheid, krampen en diarree.",
+  "Heb je een prikkelbare darm, dan kunnen prebiotica (FODMAP’s) klachten verergeren. Bouw rustig op.",
+  { groep:"darm", type:"oth", fam:"darm", nrv:"Geen NRV" }),
+
+X("d_pro","","Prb","Probiotica","Levende bacteriën en gisten",
+  "Levende micro-organismen (zoals Lactobacillus, Bifidobacterium en Saccharomyces) die in voldoende hoeveelheid een gezondheidseffect kunnen hebben. Het effect hangt af van de specifieke stam.",
+  { spijsvertering:"Levende culturen in yoghurt of gefermenteerde melk verbeteren de lactosevertering bij mensen die lactose slecht verteren." },
+  "Geen norm; kies producten met aangetoonde stammen.",
+  ["Yoghurt en kefir met levende culturen","Zuurkool en kimchi (niet gepasteuriseerd)","Kombucha, miso, tempeh, probiotische supplementen"],
+  "Geen tekort mogelijk.",
+  "Bij mensen met een sterk verminderde afweer, een centraal veneuze lijn of zeer zieke baby’s kan een probioticum juist infecties veroorzaken.",
+  "Effect is stam-specifiek: een willekeurig probioticum doet niet hetzelfde. Bij antibioticakuren is het bewijs wisselend. Vraag bij ernstige ziekte eerst je arts.",
+  { groep:"darm", type:"oth", fam:"darm", nrv:"Geen NRV" }),
+
+/* ===== Vitamine B-complex (ouder van B1 t/m B12) ===== */
+X("B","","B","Vitamine B-complex","De acht B-vitamines samen",
+  "Acht wateroplosbare vitamines (B1, B2, B3, B5, B6, B7, B9 en B12) die samenwerken in de energiestofwisseling, het zenuwstelsel en de aanmaak van bloedcellen. Het lichaam slaat ze nauwelijks op (B12 uitgezonderd), dus je hebt ze regelmatig nodig. Ze zitten vaak samen in dezelfde voeding.",
+  { energie:"Vrijwel alle B-vitamines dragen bij aan een normale energieleverende stofwisseling en aan vermindering van vermoeidheid.",
+    zenuw:"B1, B2, B3, B6, B7 en B12 dragen bij aan de normale werking van het zenuwstelsel.",
+    hersenen:"Meerdere B-vitamines dragen bij aan normale psychologische functies.",
+    bloed:"B6, B9 en B12 zijn nodig voor de aanmaak van rode bloedcellen.",
+    homocys:"B6, B9 en B12 dragen bij aan een normale homocysteïnestofwisseling.",
+    immuun:"B6, B9 en B12 dragen bij aan de normale werking van het immuunsysteem.",
+    huid:"B2, B3 en B7 dragen bij aan het behoud van normale huid.",
+    haar:"B7 (biotine) draagt bij aan het behoud van normaal haar." },
+  "Elke B-vitamine heeft een eigen referentiewaarde; zie de pagina’s hieronder.",
+  ["Volkorenproducten, peulvruchten, noten","Vlees, vis, eieren, zuivel","Groene bladgroenten, gist"],
+  "Vermoeidheid, prikkelbaarheid, tintelingen, ontstoken mondhoeken en bloedarmoede; de klachten verschillen per vitamine.",
+  "Wateroplosbaar: een overschot wordt meestal uitgeplast, maar langdurig veel B6, hoge doses nicotinezuur (B3) en veel foliumzuur kunnen schadelijk zijn.",
+  "Een B-complexsupplement is zelden nodig bij gevarieerde voeding. Uitzonderingen: B12 voor wie weinig of geen dierlijke producten eet, foliumzuur bij zwangerschapswens, en een hogere behoefte bij ouderen, veel alcohol of medicijnen zoals metformine en maagzuurremmers. Let bij combipreparaten op de hoeveelheid B6 en B3.",
+  { groep:"water", type:"vit", nrv:"Zie de afzonderlijke B-vitamines", before:"C", geenIndex:true }),
+
+/* ===== Niet-essentieel ===== */
+X("n_zuur","","Oz","Organische zuren","Azijnzuur, citroenzuur, melkzuur, appelzuur",
+  "Zuren die zuur smaak geven aan fruit, azijn, yoghurt en zuurkool, en als conserveermiddel worden toegevoegd. Het lichaam gebruikt ze als energiebron, maar heeft ze niet nodig.",
+  { energie:"Leveren in de EU berekend ongeveer 3 kcal per gram." },
+  "Geen norm.",
+  ["Citrusfruit, bessen, appel (citroen- en appelzuur)","Azijn, augurken, zuurkool","Yoghurt, kefir, zuurdesembrood (melkzuur en azijnzuur)"],
+  "Geen tekort mogelijk.",
+  "Veel zure dranken (frisdrank, sportdrank, fruitzuren) kunnen het glazuur aantasten, ook als ze suikervrij zijn.",
+  "Wacht ongeveer een half uur met tandenpoetsen na zure producten, en spoel eerst de mond met water.",
+  { groep:"nie", type:"oth", fam:"alc" }),
+
+X("n_zoet","","Zo","Intense zoetstoffen","Aspartaam, sucralose, steviolglycosiden, acesulfaam-K",
+  "Stoffen die tientallen tot honderden keren zoeter zijn dan suiker en (vrijwel) geen calorieën leveren. Alle toegelaten zoetstoffen in de EU hebben een aanvaardbare dagelijkse inname (ADI) gekregen.",
+  { botten:"Vervanging van suiker door intense zoetstoffen draagt bij aan het behoud van tandmineralisatie.",
+    stofwissel:"Vervanging van suiker door intense zoetstoffen zorgt voor een lagere stijging van de bloedglucose na de maaltijd." },
+  "ADI per kg lichaamsgewicht per dag (EFSA): aspartaam 40 mg, acesulfaam-K 9 mg, sucralose 15 mg, steviolglycosiden 4 mg.",
+  ["Light-frisdrank en -dranken","Suikervrije kauwgom en snoep","Tafelzoetstoffen"],
+  "Geen tekort mogelijk.",
+  "Boven de ADI zijn effecten op de darmen mogelijk; de meeste mensen komen daar niet aan.",
+  "De WHO (2023) raadt zoetstoffen af als middel om gewicht te beheersen op lange termijn. Mensen met fenylketonurie (PKU) moeten aspartaam vermijden.",
+  { groep:"nie", type:"oth", fam:"alc" }),
+
+X("n_caf","","Caf","Cafeïne","Stimulerende stof in koffie en thee",
+  "Blokkeert de werking van adenosine in de hersenen en maakt daardoor wakker en alert. Wordt snel opgenomen; de halfwaardetijd is ongeveer 5 uur, bij zwangeren en pilgebruiksters langer.",
+  { hersenen:"Draagt bij aan een verhoogde alertheid en een verhoogde aandacht (bij 75 mg)." },
+  "Volwassenen maximaal ongeveer 400 mg per dag, zwangeren en borstvoeding maximaal 200 mg (EFSA).",
+  ["Koffie (ongeveer 80 tot 100 mg per kopje)","Thee (30 tot 50 mg), cola, energiedrank","Pure chocolade, mate, guarana"],
+  "Geen tekort mogelijk; bij stoppen kunnen hoofdpijn en vermoeidheid optreden.",
+  "Meer dan 400 mg kan slapeloosheid, hartkloppingen, onrust en maagklachten geven.",
+  "Vermijd cafeïne enkele uren voor het slapen. Kinderen en jongeren horen geen energiedrank te drinken; bij hartritmestoornissen of angstklachten is minderen aan te raden.",
+  { groep:"nie", type:"oth", fam:"alc" }),
+
+X("n_cre","","Cre","Creatine","Energiestof van spieren",
+  "Stof die in spieren (en hersenen) wordt opgeslagen als fosfocreatine en snel energie levert bij korte, zware inspanning. Het lichaam maakt ongeveer 1 g per dag uit arginine, glycine en methionine.",
+  { spieren:"Verbetert de fysieke prestatie bij herhaalde korte, intensieve inspanningen (bij 3 g per dag).",
+    energie:"Levert snel energie in de spier via fosfocreatine." },
+  "Geen norm; vlees en vis leveren ongeveer 1 tot 2 g per dag, supplementen meestal 3 tot 5 g creatinemonohydraat.",
+  ["Rood vlees, haring en andere vis","Zuivel (kleine hoeveelheid)","Creatinemonohydraat (supplement); plantaardig vrijwel niet"],
+  "Geen tekort bij gezonden; veganisten hebben lagere voorraden, maar dat geeft geen klachten.",
+  "Veroorzaakt gewichtstoename door vochtvasthouding; soms maag-darmklachten.",
+  "Creatine kan het creatininegehalte in je bloed verhogen, wat een bloedtest voor de nierfunctie vertekent. Heb je een nieraandoening of ben je jonger dan 18, overleg dan eerst met een arts.",
+  { groep:"nie", type:"oth", fam:"alc" })
+
+];
+
+
+/* ---------- Boom opbouwen: ouder/kind, diepte, pad ---------- */
+const PARENT0 = { x_su:"x_kh", x_ze:"x_kh", x_vz:"x_kh", x_aa:"x_ei", x_vv:"x_vet", x_eo:"x_vet", x_pu:"x_vet", x_tv:"x_vet",
+                  x_o3:"x_pu", x_o6:"x_pu", x_ala:"x_o3", x_epa:"x_o3", x_la:"x_o6",
+                  B1:"B", B2:"B", B3:"B", B5:"B", B6:"B", B7:"B", B9:"B", B12:"B" };
+function assemble(base, extra) {
+  const all = [...base, ...extra];
+  all.forEach(n => { if (n.parent === undefined) n.parent = PARENT0[n.id] || ""; });
+  const byid = Object.fromEntries(all.map(n => [n.id, n]));
+  const kids = {};
+  all.forEach(n => {
+    if (n.parent && !byid[n.parent]) throw new Error("Onbekende ouder: " + n.parent + " bij " + n.id);
+    (kids[n.parent || ""] = kids[n.parent || ""] || []).push(n);
+  });
+  const out = [];
+  const walk = (n, depth, path) => {
+    n.depth = depth; n.pad = path.join(" › "); n.parentId = n.parent || null; n.hasKids = !!kids[n.id];
+    out.push(n);
+    (kids[n.id] || []).forEach(c => {
+      if (c.groep === undefined) c.groep = n.groep;
+      if (c.type === undefined) c.type = n.type;
+      if (c.fam === undefined && n.fam) c.fam = n.fam;
+      walk(c, depth + 1, [...path, n.naam]);
+    });
+  };
+  const roots = kids[""] || [];
+  roots.filter(r => r.before).forEach(r => {
+    roots.splice(roots.indexOf(r), 1);
+    const i = roots.findIndex(x => x.id === r.before);
+    roots.splice(i < 0 ? roots.length : i, 0, r);
+  });
+  roots.forEach(r => walk(r, 0, []));
+  if (out.length !== all.length) throw new Error("Boom incompleet: " + out.length + " van " + all.length);
+  return out;
+}
+const ALL = assemble([...MACROS, ...VITAMINS, ...MINERALS], EXTRA);
+ALL.find(n => n.id === "x_tv").nogoal = "Heeft geen nuttige functie voor het lichaam; het is verstandig de inname zo laag mogelijk te houden.";
+
+/* ---------- Kleurstelsel: één tint per familie, per niveau iets lichter ---------- */
+const FAM = {
+  kh:   { h: 28,  naam: "Koolhydraten" },
+  ei:   { h: 352, naam: "Eiwitten" },
+  vet:  { h: 100, naam: "Vetten" },
+  ove:  { h: 214, naam: "Overige essentiële stoffen" },
+  alc:  { h: 30,  naam: "Niet-essentieel", gray: true },
+  vvit: { h: 46,  naam: "Vetoplosbare vitamines" },
+  wvit: { h: 276, naam: "Wateroplosbare vitamines" },
+  mmin: { h: 176, naam: "Macromineralen" },
+  smin: { h: 322, naam: "Sporenelementen" },
+  ultra:{ h: 355, naam: "Ultra-sporenelementen" },
+  vlike:{ h: 214, naam: "Vitamine-achtige stoffen" },
+  fyto: { h: 140, naam: "Plantaardige stoffen" },
+  darm: { h: 20,  naam: "Darmgezondheid" }
+};
+const byIdEarly = Object.fromEntries(ALL.map(n => [n.id, n]));
+function rootOf(n) { while (n.parentId) n = byIdEarly[n.parentId]; return n; }
+function famOf(n) {
+  if (n.fam) return n.fam;
+  if (n.type === "mac") {
+    const r = rootOf(n).id;
+    return { x_kh:"kh", x_ei:"ei", x_vet:"vet", x_h2o:"ove", x_cho:"ove", x_alc:"alc" }[r] || "vet";
+  }
+  return { vet:"vvit", water:"wvit", macro:"mmin", spoor:"smin", ultra:"ultra", vlike:"vlike", fyto:"fyto", darm:"darm" }[n.groep];
+}
+function hsl2rgb(h, s, l) {
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return [f(0), f(8), f(4)].map(v => Math.round(v * 255));
+}
+function lum([r, g, b]) {
+  const c = [r, g, b].map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); });
+  return .2126 * c[0] + .7152 * c[1] + .0722 * c[2];
+}
+const DEPTH_L = [38, 46, 54, 61];  // lichtheid per niveau
+ALL.forEach(n => {
+  if (n.id === "x_tv") { n.fam = "vet"; n.kleur = "hsl(220,8%,46%)"; n.ink = "#fff"; return; }
+  const f = famOf(n); n.fam = f;
+  const fam = FAM[f];
+  const l = DEPTH_L[Math.min(n.depth || 0, 3)] + (fam.h < 70 && !fam.gray ? 9 : 0), sat = fam.gray ? 10 : 70;
+  n.kleur = `hsl(${fam.h},${sat}%,${l}%)`;
+  n.ink = lum(hsl2rgb(fam.h, sat, l)) > .30 ? "#1d1d1f" : "#fff";
+});
+
+/* ---------- Afgeleide gegevens ---------- */
+const byId = byIdEarly;
+const goalIndex = {};
+Object.keys(GOALS).forEach(g => goalIndex[g] = []);
+ALL.forEach(n => { if (!n.geenIndex) Object.keys(n.doelen).forEach(g => goalIndex[g].push(n.id)); });
+
+const SECTIONS = {
+  mac: [
+    { title:"Macronutriënten", groups:[["mac",""]] },
+    { title:"Overige essentiële stoffen", groups:[["ove",""]] },
+    { title:"Niet-essentieel", groups:[["nie",""]] }
+  ],
+  mic: [
+    { title:"Vitamines", groups:[["vet","Vetoplosbaar"],["water","Wateroplosbaar"]] },
+    { title:"Mineralen", groups:[["macro","Macromineralen"],["spoor","Sporenelementen"],["ultra","Ultra-sporenelementen"]] },
+    { title:"Vitamine-achtige stoffen", groups:[["vlike",""]] },
+    { title:"Plantaardige stoffen (fytonutriënten)", groups:[["fyto",""]] },
+    { title:"Darmgezondheid", groups:[["darm",""]] }
+  ]
+};
+
+/* ---------- Staat ---------- */
+let mode = "mac";                // "mac" | "mic" | "goal"
+const sel = { mac:"x_kh", mic:"D" };
+let selG = "hersenen";
+const open = new Set();
+let query = "";
+
+const $ = s => document.querySelector(s);
+const norm = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const kind = n => ({ vit:"vitamine", min:"mineraal", mac:"voedingsstof", oth:"stof" })[n.type];
+function reveal(id) { let n = byId[id]; while (n && n.parentId) { open.add(n.parentId); n = byId[n.parentId]; } }
+function visible(n) { if (query) return true; let p = n.parentId; while (p) { if (!open.has(p)) return false; p = byId[p].parentId; } return true; }
+
+/* ---------- Jouw voedingsmiddelen: waar zit het voornamelijk in? (waarden per 100 g, ongeveer) ---------- */
+const LABEL = ["", "bron", "rijk", "zeer rijk"];
+const FOODS = [
+  { key:"havermout", naam:"Havermout", zoek:["havermout","haver","havervlokken","oats"], items:[
+    ["x_kh",3,"ongeveer 60 g, vooral zetmeel"], ["x_ze",3,"hoofdbestanddeel"],
+    ["x_vz",3,"ongeveer 10 g"], ["x_vzo",3,"rijk aan bètaglucaan, ongeveer 4 g"],
+    ["x_rs",1,"vooral als je het afgekoeld eet, zoals overnight oats"],
+    ["x_ei",2,"ongeveer 13 g, plantaardig"], ["x_la",1,"ongeveer 2,5 g"],
+    ["x_trp",1], ["x_arg",1], ["d_pre",1,"bètaglucaan voedt de darmbacteriën"],
+    ["B1",2,"ongeveer 0,5 tot 0,8 mg"], ["B5",1], ["B9",1,"ongeveer 55 µg"],
+    ["m_Mg",2,"ongeveer 130 tot 180 mg"], ["m_Fe",2,"niet-haemijzer; vitamine C erbij verbetert de opname"],
+    ["m_Zn",2], ["m_Mn",3,"ongeveer 4 tot 5 mg (NRV 2 mg)"], ["m_P",2], ["m_Cu",2],
+    ["m_Se",1,"hangt af van de bodem"], ["m_Si",2], ["m_Ni",1]
+  ]},
+  { key:"tarwekiemen", naam:"Tarwekiemen", zoek:["tarwekiem","tarwekiemen","tarwekiemolie"], items:[
+    ["x_ei",3,"ongeveer 23 g"], ["x_his",1], ["x_vz",3,"ongeveer 13 g"], ["x_vzn",2],
+    ["x_vet",2,"ongeveer 10 g, vooral onverzadigd"], ["x_pu",2], ["x_o6",2], ["x_la",3,"ongeveer 5 g"],
+    ["x_cho",2,"ongeveer 150 mg"],
+    ["E",3,"ongeveer 15 mg (NRV 12 mg)"], ["B1",3,"ongeveer 1,9 mg (NRV 1,1 mg)"], ["B2",2], ["B3",2], ["B5",2],
+    ["B6",3,"ongeveer 1,3 mg (NRV 1,4 mg)"], ["B9",3,"ongeveer 280 µg (NRV 200 µg)"],
+    ["m_Mg",3,"ongeveer 240 mg"], ["m_Zn",3,"ongeveer 12 mg (NRV 10 mg)"], ["m_Fe",2],
+    ["m_Mn",3,"ongeveer 13 mg (NRV 2 mg)"], ["m_P",3], ["m_K",2], ["m_Cu",3],
+    ["m_Se",3,"hangt af van de bodem"]
+  ]},
+  { key:"chiazaad", naam:"Chiazaad", zoek:["chiazaad","chiazaden","chia"], items:[
+    ["x_o3",3], ["x_ala",3,"ongeveer 17 g; het cholesterolverlagende effect van ALA begint bij 2 g per dag"],
+    ["x_vet",3,"ongeveer 31 g, vooral ALA"], ["x_pu",3], ["x_la",1,"ongeveer 6 g"],
+    ["x_vz",3,"ongeveer 34 g"], ["x_vzo",3,"vormt een gel; week het eerst in en drink genoeg erbij"],
+    ["x_ei",2,"ongeveer 17 g"],
+    ["m_Ca",3,"ongeveer 630 mg (NRV 800 mg)"], ["m_Mg",3,"ongeveer 335 mg"], ["m_P",3],
+    ["m_Fe",3,"ongeveer 7,7 mg, niet-haemijzer"], ["m_Zn",2], ["m_Mn",3], ["m_Cu",3],
+    ["m_Se",3,"ongeveer 55 µg"], ["m_K",2],
+    ["B1",3,"ongeveer 0,6 mg"], ["B3",3,"ongeveer 8,8 mg"]
+  ]}
+];
+FOODS.forEach(f => {
+  f.zoekN = f.zoek.map(norm);
+  f.items.forEach(([id, lvl, note]) => {
+    const n = byId[id];
+    if (!n) throw new Error("Onbekend id in FOODS: " + id);
+    (n.voedsel = n.voedsel || {})[f.key] = { lvl, note: note || "", naam: f.naam, zoek: f.zoek };
+  });
+});
+function foodHit(n) {
+  if (!query || !n.voedsel) return null;
+  let best = null;
+  FOODS.forEach(f => {
+    if (f.zoekN.some(z => query.includes(z)) && n.voedsel[f.key]) { const h = n.voedsel[f.key]; if (!best || h.lvl > best.lvl) best = h; }
+  });
+  return best;
+}
+function tagOrAlias(n) {
+  const h = foodHit(n);
+  if (h) return `<small class="foodtag">${esc(h.naam)}: ${LABEL[h.lvl]}${h.note ? " · " + esc(h.note) : ""}</small>`;
+  return n.alias ? `<small>${esc(n.alias)}</small>` : "";
+}
+function foodBlock(n) {
+  if (!n.voedsel) return "";
+  const rows = Object.values(n.voedsel).sort((a, b) => b.lvl - a.lvl)
+    .map(v => `<li><b>${esc(v.naam)}</b>: ${LABEL[v.lvl]}${v.note ? ` (${esc(v.note)})` : ""}</li>`).join("");
+  return `<h3>Jouw voedingsmiddelen <span style="text-transform:none;letter-spacing:0">(waarden per 100 g, ongeveer)</span></h3><ul>${rows}</ul>`;
+}
+
+
+/* ---------- Weergave ---------- */
+function nutrientMatches(n) {
+  if (!query) return true;
+  const hay = norm([n.naam, n.alias, n.pad || "", n.functie, ...Object.values(n.doelen), ...n.bronnen, ...Object.keys(n.doelen).map(g => GOALS[g]), ...(n.voedsel ? Object.values(n.voedsel).flatMap(v => v.zoek) : [])].join(" "));
+  return query.split(/\s+/).every(t => hay.includes(t));
+}
+function goalMatches(g) {
+  if (!query) return true;
+  const hay = norm(GOALS[g] + " " + goalIndex[g].map(id => byId[id].naam + " " + byId[id].alias).join(" "));
+  return query.split(/\s+/).every(t => hay.includes(t));
+}
+function badge(n) {
+  const small = n.letter.length > 2 ? "font-size:11px;" : "";
+  return `<span class="badge" style="background:${n.kleur};color:${n.ink};${small}">${esc(n.letter)}</span>`;
+}
+
+function famOfGroup(g) { return { vet:"vvit", water:"wvit", macro:"mmin", spoor:"smin", ultra:"ultra" }[g]; }
+function renderList() {
+  const el = $("#list");
+  let html = "";
+  if (mode === "mac" || mode === "mic") {
+    SECTIONS[mode].forEach(sec => {
+      let body = "";
+      sec.groups.forEach(([grp, label]) => {
+        const items = ALL.filter(n => n.groep === grp && nutrientMatches(n) && visible(n));
+      if (query) items.sort((a, b) => (foodHit(b) ? foodHit(b).lvl : 0) - (foodHit(a) ? foodHit(a).lvl : 0));
+        if (!items.length) return;
+        if (label) body += `<div class="group-title lvl1"><i class="dot" style="background:hsl(${FAM[famOfGroup(grp)].h},62%,46%)"></i>${esc(label)}</div>`;
+        items.forEach(n => {
+          body += `<button class="item" data-n="${n.id}" data-depth="${n.depth || 0}" aria-current="${n.id === sel[mode]}">
+            ${badge(n)}
+            <span><b>${esc(n.naam)}</b>${tagOrAlias(n)}</span>
+            ${n.hasKids && !query ? `<span class="chev" data-chev="${n.id}" role="button" aria-label="${open.has(n.id) ? "Inklappen" : "Uitklappen"}" aria-expanded="${open.has(n.id)}">${open.has(n.id) ? "▾" : "▸"}</span>` : ""}</button>`;
+        });
+      });
+      if (body) html += `<div class="group-title lvl0">${esc(sec.title)}</div>` + body;
+    });
+    if (!html) html = `<div class="empty">Niets gevonden.</div>`;
+  } else {
+    Object.keys(GOALS).filter(goalMatches).forEach(g => {
+      const c = goalIndex[g].length;
+      html += `<button class="item" data-g="${g}" aria-current="${g === selG}">
+        <span><b>${esc(GOALS[g])}</b></span>
+        <span class="goal-count">${c} ${c === 1 ? "stof" : "stoffen"}</span></button>`;
+    });
+    if (!html) html = `<div class="empty">Geen doel gevonden.</div>`;
+  }
+  el.innerHTML = html;
+}
+
+function renderNutrient(n) {
+  const goals = Object.keys(n.doelen);
+  const nrv = n.nrv ? (/^(Geen|Zie)/.test(n.nrv) ? n.nrv : `referentiewaarde ${n.nrv}${(n.type === "vit" || /^\d/.test(n.nrv)) ? " per dag" : ""}`) : null;
+  const sub = [n.alias, n.ess ? "Essentieel" : null, GROUP[n.groep], nrv].filter(Boolean).join(" · ");
+  return `
+    ${n.pad ? `<div class="crumb">${esc(n.pad)}</div>` : ""}
+    <h2>${esc(n.naam)}</h2>
+    <p class="sub">${esc(sub)}</p>
+    <p>${esc(n.functie)}</p>
+
+    ${n.aanbeveling ? `<h3>Hoeveel heb je nodig?</h3><p style="margin:0">${esc(n.aanbeveling)}</p>` : ""}
+
+    <h3>Waar is het goed voor?${goals.length ? ` <span class="hint" style="text-transform:none;letter-spacing:0">(klik voor andere stoffen bij hetzelfde doel)</span>` : ""}</h3>
+    ${goals.length ? `
+      <div class="chips">${goals.map(g => `<button class="chip" data-goto-goal="${g}">${esc(GOALS[g])}</button>`).join("")}</div>
+      <ul style="margin-top:10px">${goals.map(g => `<li><b>${esc(GOALS[g])}:</b> ${esc(n.doelen[g])}</li>`).join("")}</ul>`
+      : `<p style="margin:0">${esc(n.nogoal || "Geen bevestigde specifieke functie.")}</p>`}
+
+    <h3>Voedingsbronnen</h3>
+    <ul>${n.bronnen.map(b => `<li>${esc(b)}</li>`).join("")}</ul>
+    ${foodBlock(n)}
+
+    <h3>Bij een tekort</h3>
+    <p style="margin:0">${esc(n.tekort)}</p>
+
+    ${n.overschot ? `<h3>Bij te veel</h3><p style="margin:0">${esc(n.overschot)}</p>` : ""}
+
+    <div class="box warn"><strong>Let op:</strong> ${esc(n.let_op)}</div>`;
+}
+
+function renderGoalCard(n, g) {
+  return `
+    <div class="vcard">
+      ${badge(n)}
+      <div>
+        <h4>${esc(n.naam)} <span style="color:var(--muted);font-weight:400">· ${n.alias ? esc(n.alias) : kind(n)}</span></h4>
+        <p class="why">${esc(n.doelen[g])}</p>
+        <button class="open" data-goto-n="${n.id}">Alle info over ${esc(n.naam)} →</button>
+      </div>
+    </div>`;
+}
+
+const TOP = `<p class="print-only">Voedingsstoffengids · algemene voorlichting, geen medisch advies.</p>`;
+
+function renderDetail() {
+  const el = $("#detail");
+  renderDetailInner(el);
+  el.insertAdjacentHTML("beforeend", TOP);
+  const cur = (mode === "goal") ? null : byId[sel[mode]];
+  el.style.borderTop = cur ? `5px solid ${cur.kleur}` : "5px solid var(--line)";
+}
+function renderDetailInner(el) {
+  if (mode === "mac" || mode === "mic") {
+    const n = byId[sel[mode]];
+    el.innerHTML = n ? renderNutrient(n) : `<div class="empty">Kies een item uit de lijst.</div>`;
+  } else {
+    const ids = (goalIndex[selG] || []).map(i => byId[i]);
+    const mac = ids.filter(n => n.type === "mac");
+    const vit = ids.filter(n => n.type === "vit");
+    const min = ids.filter(n => n.type === "min");
+    const oth = ids.filter(n => n.type === "oth");
+    const note = GOAL_NOTES[selG];
+    const cnt = (a, one, many) => `${a.length} ${a.length === 1 ? one : many}`;
+    const parts = [];
+    if (mac.length) parts.push(cnt(mac, "macronutriënt of essentiële stof", "macronutriënten en essentiële stoffen"));
+    if (vit.length) parts.push(cnt(vit, "vitamine", "vitamines"));
+    if (min.length) parts.push(cnt(min, "mineraal", "mineralen"));
+    if (oth.length) parts.push(cnt(oth, "overige stof", "overige stoffen"));
+    el.innerHTML = `
+      <h2>${esc(GOALS[selG])}</h2>
+      <p class="sub">${esc(parts.join(", "))} dragen hieraan bij.</p>
+      ${mac.length ? `<div class="sect">Macronutriënten &amp; essentiële stoffen</div>${mac.map(n => renderGoalCard(n, selG)).join("")}` : ""}
+      ${vit.length ? `<div class="sect">Vitamines</div>${vit.map(n => renderGoalCard(n, selG)).join("")}` : ""}
+      ${min.length ? `<div class="sect">Mineralen &amp; sporenelementen</div>${min.map(n => renderGoalCard(n, selG)).join("")}` : ""}
+      ${oth.length ? `<div class="sect">Overige stoffen</div>${oth.map(n => renderGoalCard(n, selG)).join("")}` : ""}
+      ${note ? `<div class="box warn" style="margin-top:18px"><strong>Goed om te weten:</strong> ${esc(note)}</div>` : ""}
+      <div class="box info" style="margin-top:12px">Een gevarieerd dieet dekt de behoefte aan de meeste stoffen al. Een supplement is vooral zinvol bij een aangetoond tekort of een risicogroep.</div>`;
+  }
+}
+
+function setMode(m) {
+  mode = m;
+  $("#tabA").setAttribute("aria-pressed", m === "mac");
+  $("#tabB").setAttribute("aria-pressed", m === "mic");
+  $("#tabG").setAttribute("aria-pressed", m === "goal");
+  $("#q").placeholder = m === "goal" ? "Zoek doel of stof…" : "Zoek stof, bron of doel…";
+  renderList(); renderDetail();
+}
+
+/* ---------- Events ---------- */
+$("#tabA").onclick = () => setMode("mac");
+$("#tabB").onclick = () => setMode("mic");
+$("#tabG").onclick = () => setMode("goal");
+$("#q").addEventListener("input", e => { query = norm(e.target.value.trim()); renderList(); });
+
+$("#list").addEventListener("click", e => {
+  const ch = e.target.closest(".chev");
+  if (ch) { const id = ch.dataset.chev; open.has(id) ? open.delete(id) : open.add(id); renderList(); return; }
+  const b = e.target.closest(".item"); if (!b) return;
+  if (b.dataset.n) {
+    const id = b.dataset.n, n = byId[id];
+    if (sel[mode] === id && n.hasKids && !query) { open.has(id) ? open.delete(id) : open.add(id); }
+    else { sel[mode] = id; if (n.hasKids) open.add(id); }
+  }
+  if (b.dataset.g) selG = b.dataset.g;
+  renderList(); renderDetail();
+});
+$("#detail").addEventListener("click", e => {
+  const g = e.target.closest("[data-goto-goal]");
+  if (g) { selG = g.dataset.gotoGoal; query = ""; $("#q").value = ""; setMode("goal"); window.scrollTo(0, 0); return; }
+  const v = e.target.closest("[data-goto-n]");
+  if (v) {
+    const n = byId[v.dataset.gotoN];
+    const m = ["mac","ove","nie"].includes(n.groep) ? "mac" : "mic";
+    sel[m] = n.id; query = ""; $("#q").value = ""; reveal(n.id); setMode(m); window.scrollTo(0, 0);
+  }
+});
+
+function toTop() { window.scrollTo({ top: 0, behavior: "smooth" }); }
+$("#toTop").addEventListener("click", toTop);
+function updateTop() { $("#toTop").classList.toggle("atTop", window.scrollY < 40); }
+window.addEventListener("scroll", updateTop, { passive: true });
+updateTop();
+
+/* Lettergrootte */
+const SIZES = [0.85, 1, 1.15, 1.3, 1.5];
+let sizeIdx = 1;
+try { const v = parseInt(localStorage.getItem("vg-size"), 10); if (v >= 0 && v < SIZES.length) sizeIdx = v; } catch (_) {}
+function applySize() {
+  document.documentElement.style.fontSize = (16 * SIZES[sizeIdx]) + "px";
+  $("#fsDown").disabled = sizeIdx === 0;
+  $("#fsUp").disabled = sizeIdx === SIZES.length - 1;
+  try { localStorage.setItem("vg-size", sizeIdx); } catch (_) {}
+}
+$("#fsDown").onclick = () => { if (sizeIdx > 0) { sizeIdx--; applySize(); } };
+$("#fsUp").onclick = () => { if (sizeIdx < SIZES.length - 1) { sizeIdx++; applySize(); } };
+applySize();
+
+/* Afdrukken / PDF */
+$("#printBtn").onclick = () => window.print();
+
+/* Op smalle schermen: na een keuze naar het detail scrollen */
+$("#list").addEventListener("click", e => {
+  if (e.target.closest(".item") && !e.target.closest(".chev") && window.innerWidth <= 760) $("#detail").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+/* Pijltjestoetsen door de lijst */
+$("#list").addEventListener("keydown", e => {
+  if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+  const items = [...document.querySelectorAll("#list .item")];
+  const i = items.indexOf(document.activeElement);
+  if (i < 0) return;
+  e.preventDefault();
+  const n = items[i + (e.key === "ArrowDown" ? 1 : -1)];
+  if (n) {
+    n.click();
+    const cur = document.querySelector('#list .item[aria-current="true"]');
+    if (cur) cur.focus();
+  }
+});
+
+setMode("mac");
+
+/* Offline gebruik (alleen via http/https, niet bij een lokaal bestand) */
+if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+Voedingsstoffengids als app op iPhone en iPad
+=============================================
+
+Bestanden in deze map:
+  index.html              de gids zelf
+  manifest.webmanifest    naam en icoon van de app
+  sw.js                   zorgt dat de app ook zonder internet werkt
+  icons/                  de app-iconen
+
+Zo zet je het online (GitHub Pages, gratis):
+  1. Ga op github.com naar "+" (rechtsboven) > "New repository".
+  2. Naam: voedingsgids. Kies "Public" en klik "Create repository".
+  3. Klik op "uploading an existing file" en sleep ALLE bestanden en de map icons erin
+     (pak eerst deze zip uit). Klik daarna op "Commit changes".
+  4. Ga naar Settings > Pages. Kies bij "Branch" de optie "main" en "/ (root)" en klik "Save".
+  5. Na 1 tot 2 minuten staat bovenaan: https://JOUWGEBRUIKERSNAAM.github.io/voedingsgids/
+
+Zo zet je het op je iPhone of iPad:
+  1. Open die link in Safari.
+  2. Tik op het deel-icoon (vierkantje met pijl) > "Zet op beginscherm" > "Voeg toe".
+  3. Open de app één keer met internet; daarna werkt hij ook offline.
+
+Later iets aanpassen: vervang index.html in je repository en verhoog in sw.js het getal
+bij VERSIE (bijvoorbeeld "voedingsgids-v2") zodat je telefoon de nieuwe versie ophaalt.
